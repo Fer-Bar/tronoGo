@@ -9,13 +9,14 @@ import { RestroomMarker } from './RestroomMarker'
 import { LocationMarker } from './LocationMarker'
 
 interface MapboxMapProps {
-  restrooms: Restroom[]
+  restrooms?: Restroom[]
   onMarkerClick?: (id: string) => void
+  mode?: 'explore' | 'pin-picker'
+  onMoveEnd?: () => void
 }
 
-export function MapboxMap({ restrooms, onMarkerClick }: MapboxMapProps) {
+export function MapboxMap({ restrooms = [], onMarkerClick, mode = 'explore', onMoveEnd }: MapboxMapProps) {
   const { mapViewState, setMapViewState, userLocation } = useAppStore()
-  // const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null) // Removed
 
   const handleMove = useCallback(
     (evt: ViewStateChangeEvent) => {
@@ -28,25 +29,23 @@ export function MapboxMap({ restrooms, onMarkerClick }: MapboxMapProps) {
     [setMapViewState]
   )
 
-  // Get user location on mount - REMOVED (Handled in App.tsx)
-  // useEffect(() => { ... }, [])
-
   return (
     <Map
       {...mapViewState}
       onMove={handleMove}
+      onMoveEnd={onMoveEnd}
       mapStyle={MAP_STYLE}
       mapboxAccessToken={MAPBOX_TOKEN}
       style={{ width: '100%', height: '100%' }}
       attributionControl={false}
     >
-      {/* Geolocate control */}
+      {/* Geolocate control - Hidden, we use custom button */}
       <GeolocateControl
         position="bottom-right"
         positionOptions={{ enableHighAccuracy: true }}
         trackUserLocation
         showUserHeading
-        style={{ display: 'none' }} // Hidden, we'll use custom button
+        style={{ display: 'none' }} 
       />
 
       {/* User location marker */}
@@ -54,8 +53,8 @@ export function MapboxMap({ restrooms, onMarkerClick }: MapboxMapProps) {
         <LocationMarker latitude={userLocation.latitude} longitude={userLocation.longitude} />
       )}
 
-      {/* Restroom markers */}
-      {restrooms.map((restroom) => (
+      {/* Restroom markers - Only show in Explore Mode */}
+      {mode === 'explore' && restrooms.map((restroom) => (
         <RestroomMarker
           key={restroom.id}
           restroom={restroom}

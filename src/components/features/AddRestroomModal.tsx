@@ -70,6 +70,12 @@ export function AddRestroomModal({ isOpen, onClose, onSuccess }: AddRestroomModa
   const handleSubmit = async () => {
     if (!draftLocation) return
 
+    // Validation: Price is required if not free
+    if (!isFree && (!price || parseFloat(price) <= 0)) {
+        toast.error('Por favor ingresa un precio válido o marca "Es Gratis"')
+        return
+    }
+
     setIsSubmitting(true)
 
     try {
@@ -82,7 +88,6 @@ export function AddRestroomModal({ isOpen, onClose, onSuccess }: AddRestroomModa
         longitude: draftLocation.longitude,
         address: draftLocation.address,
         price: numericPrice,
-        is_free: isFree,
         rating: 0,
         vote_count: 0,
         status: 'open' as const,
@@ -228,11 +233,18 @@ export function AddRestroomModal({ isOpen, onClose, onSuccess }: AddRestroomModa
                      <div className="flex items-center gap-2">
                        <span className="text-gray-500 font-bold">Bs</span>
                        <input 
-                         type="number" 
+                         type="text"
+                         inputMode="decimal"
                          value={price}
-                         onChange={(e) => setPrice(e.target.value)}
+                         onChange={(e) => {
+                           const val = e.target.value
+                           // Allow empty or numbers with max 1 decimal
+                           if (val === '' || /^\d+(\.\d{0,1})?$/.test(val)) {
+                             setPrice(val)
+                           }
+                         }}
                          className="w-20 bg-white dark:bg-gray-800 rounded-lg px-2 py-1 text-center font-bold text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-primary-500 outline-none"
-                         placeholder="0.00"
+                         placeholder="0.0"
                        />
                      </div>
                   )}

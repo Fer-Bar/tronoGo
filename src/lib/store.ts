@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import type { Restroom } from './database.types'
+import type { FilterState } from './types'
 
 interface MapViewState {
     longitude: number
@@ -38,6 +39,10 @@ interface AppState {
     isDarkMode: boolean
     setIsDarkMode: (dark: boolean) => void
 
+    // Filters
+    filters: FilterState
+    setFilters: (filters: FilterState) => void
+
     // Restrooms data
     restrooms: Restroom[]
     setRestrooms: (restrooms: Restroom[]) => void
@@ -49,6 +54,15 @@ const DEFAULT_VIEW_STATE: MapViewState = {
     longitude: -99.1332,
     latitude: 19.4326,
     zoom: 13,
+}
+
+const DEFAULT_FILTERS: FilterState = {
+    type: [],
+    isAccessible: null,
+    hasBabyChanger: null,
+    hasPaper: null,
+    hasSoap: null,
+    isFree: null,
 }
 
 export const useAppStore = create<AppState>((set) => ({
@@ -69,6 +83,9 @@ export const useAppStore = create<AppState>((set) => ({
 
     isDarkMode: false,
     setIsDarkMode: (isDarkMode) => set({ isDarkMode }),
+
+    filters: DEFAULT_FILTERS,
+    setFilters: (filters) => set({ filters }),
 
     restrooms: [],
     setRestrooms: (restrooms) => set({ restrooms }),

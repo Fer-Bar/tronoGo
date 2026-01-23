@@ -1,64 +1,33 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { IconPlus, IconCurrentLocation, IconList, IconMap } from '@tabler/icons-react'
-import { MapboxMap } from '../map'
 import { FilterBar } from './FilterBar'
 import { RestroomDetail } from './RestroomDetail'
 import { NearbyList } from './NearbyList'
 import { useAppStore } from '../../lib/store'
-import { supabase } from '../../lib/supabase'
-import type { Restroom } from '../../lib/database.types'
-import type { FilterState } from '../../lib/types'
-import { calculateDistance } from '../../lib/utils'
+import { filterAndSortRestrooms } from '../../lib/utils'
 
 export function ExploreScreen({ onAddClick }: { onAddClick: () => void }) {
-  const { restrooms, setRestrooms, selectedRestroom, setSelectedRestroom, setMapViewState, userLocation } =
+  const { restrooms, selectedRestroom, setSelectedRestroom, setMapViewState, userLocation, filters, setFilters } =
     useAppStore()
   
+  // View mode is still local UI state for switching list/map overlay buttons
   const [viewMode, setViewMode] = useState<'map' | 'list'>('map')
-  // const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null) // Removed
   
-  const [filters, setFilters] = useState<FilterState>({
-    type: [],
-    isAccessible: null,
-    hasBabyChanger: null,
-    hasPaper: null,
-    hasSoap: null,
-    isFree: null,
-  })
-
-  // Fetch restrooms on mount
-  useEffect(() => {
-    async function fetchRestrooms() {
-      const { data, error } = await supabase
-        .from('restrooms')
-        .select('*')
-        .limit(100)
-
-      if (error) {
-        console.error('Error fetching restrooms:', error)
-        return
-      }
-
-      if (data) {
-        setRestrooms(data as Restroom[])
-      }
-    }
-
-    fetchRestrooms()
-  }, [setRestrooms])
-
-  // Get User Location - REMOVED (Handled in App.tsx)
-  // useEffect(() => { ... }, [])
-
   const handleMarkerClick = useCallback(
     (id: string) => {
       const restroom = restrooms.find((r) => r.id === id)
       if (restroom) {
         setSelectedRestroom(restroom)
+        // Center map on selected restroom (Store updates the map view state, persistent map reacts)
+        setMapViewState({
+          longitude: restroom.longitude,
+          latitude: restroom.latitude,
+          zoom: 16, 
+        })
       }
-      setViewMode('map') // Switch to map when picking from list or marker
+      setViewMode('map') 
     },
-    [restrooms, setSelectedRestroom]
+    [restrooms, setSelectedRestroom, setMapViewState]
   )
 
   const handleCloseDetails = useCallback(() => {
@@ -73,81 +42,34 @@ export function ExploreScreen({ onAddClick }: { onAddClick: () => void }) {
           zoom: 15,
         })
     } else {
-        // Fallback or message if location not yet available
         alert("Obteniendo ubicación...")
     }
   }, [setMapViewState, userLocation])
 
-  // Advanced Filtering Logic
-  const filteredRestrooms = restrooms.filter((restroom) => {
-    // 1. Accessibility
-    if (filters.isAccessible && !restroom.amenities.includes('accessible')) {
-      return false
-    }
-
-    // 2. Baby Changer
-    if (filters.hasBabyChanger && !restroom.amenities.includes('baby_changing')) {
-      return false
-    }
-
-    // New: Paper
-    if (filters.hasPaper && !restroom.amenities.includes('paper')) {
-      return false
-    }
-
-    // New: Soap
-    if (filters.hasSoap && !restroom.amenities.includes('soap')) {
-      return false
-    }
-
-    // 3. Price (Free / Paid)
-    if (filters.isFree !== null && restroom.is_free !== filters.isFree) {
-      return false
-    }
-
-    // 4. Type (Male/Female/Unisex) - OR logic for selected types
-    if (filters.type.length > 0) {
-      if (filters.type.length === 1 && filters.type.includes('unisex')) {
-        return restroom.amenities.includes('unisex')
-      }
-      const isUnisex = restroom.amenities.includes('unisex')
-      const matchesGender = filters.type.some(t => {
-        if (t === 'unisex') return isUnisex
-        if (t === 'male') return restroom.amenities.includes('male') || !isUnisex 
-        if (t === 'female') return restroom.amenities.includes('female') || !isUnisex
-        return false
-      })
-      
-      if (!matchesGender) return false
-    }
-
-    return true
-  }).sort((a, b) => {
-    // Sort by distance if user location is known
-    if (userLocation) {
-        const distA = calculateDistance(userLocation.latitude, userLocation.longitude, a.latitude, a.longitude)
-        const distB = calculateDistance(userLocation.latitude, userLocation.longitude, b.latitude, b.longitude)
-        return distA - distB
-    }
-    return 0
-  })
+  // Filter logic moved to App/utils - we just display the count based on raw or filtered?
+  // Use filterAndSortRestrooms here just for the count passed to FilterBar? 
+  // Yes, FilterBar needs count.
+  // We can re-use the util.
+  const filteredRestrooms = filterAndSortRestrooms(restrooms, filters, userLocation)
 
   return (
-    <div className="relative h-full w-full bg-gray-100 dark:bg-gray-950">
-      {/* Map - Full screen background */}
-      <div className="absolute inset-0">
-        <MapboxMap restrooms={filteredRestrooms} onMarkerClick={handleMarkerClick} />
-      </div>
+    <div className="relative h-full w-full bg-transparent pointer-events-none">
+      {/* Map is now in App.tsx */}
+
+      {/* Interactive Elements Wrapper */}
+      <div className="contents pointer-events-auto">
 
       {/* Filter Bar */}
-      <FilterBar 
-        filters={filters} 
-        onFiltersChange={setFilters} 
-        bathroomCount={filteredRestrooms.length} 
-      />
+      <div className="pointer-events-auto">
+        <FilterBar 
+            filters={filters} 
+            onFiltersChange={setFilters} 
+            bathroomCount={filteredRestrooms.length} 
+        />
+      </div>
 
       {/* Map Mode Toggle Button */}
-      <div className="absolute top-[4.5rem] right-3 z-30">
+      <div className="absolute top-[4.5rem] right-3 z-30 pointer-events-auto">
           <button
             onClick={() => setViewMode(prev => prev === 'map' ? 'list' : 'map')}
             className="flex items-center gap-2 px-4 py-2 bg-white/95 dark:bg-gray-900/95 backdrop-blur border border-gray-200 dark:border-gray-800 rounded-full shadow-lg text-sm font-bold text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-all active:scale-95"
@@ -164,9 +86,9 @@ export function ExploreScreen({ onAddClick }: { onAddClick: () => void }) {
           </button>
       </div>
 
-      {/* FAB Buttons Container (Map Mode Only) */}
+      {/* FAB Buttons Container */}
       {viewMode === 'map' && (
-        <div className="absolute bottom-6 right-6 flex flex-col gap-3 items-end pointer-events-auto z-20">
+        <div className="absolute bottom-6 right-6 flex flex-col gap-3 items-end z-20 pointer-events-auto">
           <button
             onClick={handleCenterOnUser}
             className="flex size-11 items-center justify-center rounded-full bg-white dark:bg-gray-800 shadow-lg text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-transform hover:scale-105 active:scale-95"
@@ -186,20 +108,26 @@ export function ExploreScreen({ onAddClick }: { onAddClick: () => void }) {
 
       {/* Nearby List Overlay - Shows when viewMode is list */}
       {viewMode === 'list' && (
-        <NearbyList 
-            restrooms={filteredRestrooms}
-            userLocation={userLocation}
-            onRestroomSelect={(r) => handleMarkerClick(r.id)}
-            onClose={() => setViewMode('map')}
-        />
+        <div className="pointer-events-auto h-full"> {/* Ensure pointer events work, h-full to match context if needed, or just let NearbyList handle pos */}
+             <NearbyList 
+                restrooms={filteredRestrooms}
+                userLocation={userLocation}
+                onRestroomSelect={(r) => handleMarkerClick(r.id)}
+                onClose={() => setViewMode('map')}
+            />
+        </div>
       )}
 
-      {/* Restroom details bottom sheet (Map Mode Only OR when selected via list but switch happens above) */}
-      <RestroomDetail
-        restroom={selectedRestroom}
-        isOpen={!!selectedRestroom}
-        onClose={handleCloseDetails}
-      />
+      {/* Restroom details bottom sheet */}
+      <div className="pointer-events-auto">
+        <RestroomDetail
+            restroom={selectedRestroom}
+            isOpen={!!selectedRestroom}
+            onClose={handleCloseDetails}
+        />
+      </div>
+      
+      </div>
     </div>
   )
 }

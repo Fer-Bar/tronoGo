@@ -1,4 +1,6 @@
 import { clsx, type ClassValue } from 'clsx'
+import type { Restroom } from './database.types'
+import type { FilterState } from './types'
 
 export function cn(...inputs: ClassValue[]) {
     return clsx(inputs)
@@ -39,4 +41,63 @@ export function calculateDistance(
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
 
     return R * c
+}
+
+export function filterAndSortRestrooms(
+    restrooms: Restroom[],
+    filters: FilterState,
+    userLocation: { latitude: number; longitude: number } | null
+): Restroom[] {
+    return restrooms.filter((restroom) => {
+        // 1. Accessibility
+        if (filters.isAccessible && !restroom.amenities.includes('accessible')) {
+            return false
+        }
+
+        // 2. Baby Changer
+        if (filters.hasBabyChanger && !restroom.amenities.includes('baby_changing')) {
+            return false
+        }
+
+        // New: Paper
+        if (filters.hasPaper && !restroom.amenities.includes('paper')) {
+            return false
+        }
+
+        // New: Soap
+        if (filters.hasSoap && !restroom.amenities.includes('soap')) {
+            return false
+        }
+
+        // 3. Price (Free / Paid)
+        if (filters.isFree !== null && restroom.is_free !== filters.isFree) {
+            return false
+        }
+
+        // 4. Type (Male/Female/Unisex) - OR logic for selected types
+        if (filters.type.length > 0) {
+            if (filters.type.length === 1 && filters.type.includes('unisex')) {
+                return restroom.amenities.includes('unisex')
+            }
+            const isUnisex = restroom.amenities.includes('unisex')
+            const matchesGender = filters.type.some(t => {
+                if (t === 'unisex') return isUnisex
+                if (t === 'male') return restroom.amenities.includes('male') || !isUnisex
+                if (t === 'female') return restroom.amenities.includes('female') || !isUnisex
+                return false
+            })
+
+            if (!matchesGender) return false
+        }
+
+        return true
+    }).sort((a, b) => {
+        // Sort by distance if user location is known
+        if (userLocation) {
+            const distA = calculateDistance(userLocation.latitude, userLocation.longitude, a.latitude, a.longitude)
+            const distB = calculateDistance(userLocation.latitude, userLocation.longitude, b.latitude, b.longitude)
+            return distA - distB
+        }
+        return 0
+    })
 }
