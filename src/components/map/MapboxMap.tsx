@@ -1,6 +1,6 @@
-import { useCallback } from 'react'
+import { useCallback, useRef, useImperativeHandle, forwardRef } from 'react'
 import Map, { GeolocateControl } from 'react-map-gl/mapbox'
-import type { ViewStateChangeEvent } from 'react-map-gl/mapbox'
+import type { ViewStateChangeEvent, MapRef } from 'react-map-gl/mapbox'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import { MAPBOX_TOKEN, MAP_STYLE } from '../../lib/constants'
 import { useAppStore } from '../../lib/store'
@@ -15,52 +15,73 @@ interface MapboxMapProps {
   onMoveEnd?: () => void
 }
 
-export function MapboxMap({ restrooms = [], onMarkerClick, mode = 'explore', onMoveEnd }: MapboxMapProps) {
-  const { mapViewState, setMapViewState, userLocation } = useAppStore()
-
-  const handleMove = useCallback(
-    (evt: ViewStateChangeEvent) => {
-      setMapViewState({
-        longitude: evt.viewState.longitude,
-        latitude: evt.viewState.latitude,
-        zoom: evt.viewState.zoom,
-      })
-    },
-    [setMapViewState]
-  )
-
-  return (
-    <Map
-      {...mapViewState}
-      onMove={handleMove}
-      onMoveEnd={onMoveEnd}
-      mapStyle={MAP_STYLE}
-      mapboxAccessToken={MAPBOX_TOKEN}
-      style={{ width: '100%', height: '100%' }}
-      attributionControl={false}
-    >
-      {/* Geolocate control - Hidden, we use custom button */}
-      <GeolocateControl
-        position="bottom-right"
-        positionOptions={{ enableHighAccuracy: true }}
-        trackUserLocation
-        showUserHeading
-        style={{ display: 'none' }} 
-      />
-
-      {/* User location marker */}
-      {userLocation && (
-        <LocationMarker latitude={userLocation.latitude} longitude={userLocation.longitude} />
-      )}
-
-      {/* Restroom markers - Only show in Explore Mode */}
-      {mode === 'explore' && restrooms.map((restroom) => (
-        <RestroomMarker
-          key={restroom.id}
-          restroom={restroom}
-          onClick={() => onMarkerClick?.(restroom.id)}
-        />
-      ))}
-    </Map>
-  )
+export interface MapboxMapHandle {
+  flyTo: (longitude: number, latitude: number, zoom?: number) => void
 }
+
+export const MapboxMap = forwardRef<MapboxMapHandle, MapboxMapProps>(
+  function MapboxMap({ restrooms = [], onMarkerClick, mode = 'explore', onMoveEnd }, ref) {
+    const { mapViewState, setMapViewState, userLocation } = useAppStore()
+    const mapRef = useRef<MapRef>(null)
+
+    // Expose flyTo method to parent components
+    useImperativeHandle(ref, () => ({
+      flyTo: (longitude: number, latitude: number, zoom = 16) => {
+        mapRef.current?.flyTo({
+          center: [longitude, latitude],
+          zoom,
+          duration: 1500,
+          essential: true,
+        })
+      },
+    }))
+
+    const handleMove = useCallback(
+      (evt: ViewStateChangeEvent) => {
+        setMapViewState({
+          longitude: evt.viewState.longitude,
+          latitude: evt.viewState.latitude,
+          zoom: evt.viewState.zoom,
+        })
+      },
+      [setMapViewState]
+    )
+
+    return (
+      <Map
+        ref={mapRef}
+        {...mapViewState}
+        onMove={handleMove}
+        onMoveEnd={onMoveEnd}
+        mapStyle={MAP_STYLE}
+        mapboxAccessToken={MAPBOX_TOKEN}
+        style={{ width: '100%', height: '100%' }}
+        attributionControl={false}
+      >
+        {/* Geolocate control - Hidden, we use custom button */}
+        <GeolocateControl
+          position="bottom-right"
+          positionOptions={{ enableHighAccuracy: true }}
+          trackUserLocation
+          showUserHeading
+          style={{ display: 'none' }} 
+        />
+
+        {/* User location marker */}
+        {userLocation && (
+          <LocationMarker latitude={userLocation.latitude} longitude={userLocation.longitude} />
+        )}
+
+        {/* Restroom markers - Only show in Explore Mode */}
+        {mode === 'explore' && restrooms.map((restroom) => (
+          <RestroomMarker
+            key={restroom.id}
+            restroom={restroom}
+            onClick={() => onMarkerClick?.(restroom.id)}
+          />
+        ))}
+      </Map>
+    )
+  }
+)
+

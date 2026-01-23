@@ -1,10 +1,12 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { ExploreScreen, PinPickerScreen, AddRestroomModal } from './components/features'
 import { Toaster } from 'sonner'
 import { useAppStore } from './lib/store'
 import { MapboxMap } from './components/map'
+import type { MapboxMapHandle } from './components/map/MapboxMap'
 import { filterAndSortRestrooms } from './lib/utils'
 import { MAPBOX_TOKEN } from './lib/constants'
+import { getCachedLocation, initGeolocation } from './lib/geolocation'
 import type { Restroom } from './lib/database.types'
 
 type Screen = 'explore' | 'pin-picker'
@@ -12,46 +14,46 @@ type Screen = 'explore' | 'pin-picker'
 function App() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('explore')
   const { isAddModalOpen, setIsAddModalOpen, setDraftLocation, filters, restrooms, userLocation, mapViewState } = useAppStore()
-  const [pickerAddress, setPickerAddress] = useState<string>('Cargando dirección...')
+  const [pickerAddress, setPickerAddress] = useState<string>('Cargando direccion...')
+  const mapRef = useRef<MapboxMapHandle>(null)
 
   // Force Cyber Midnight theme (Dark Mode)
   useState(() => {
     document.documentElement.classList.add('dark')
   })
 
-  // Geolocation Watcher
+  // Load cached location immediately, then start watcher for updates
   useEffect(() => {
-    if (!('geolocation' in navigator)) return
+    const { setUserLocation, setMapViewState } = useAppStore.getState()
+    
+    // Load cached location first for instant UX
+    const cached = getCachedLocation()
+    if (cached) {
+      setUserLocation(cached)
+      setMapViewState({
+        longitude: cached.longitude,
+        latitude: cached.latitude,
+        zoom: 15,
+      })
+    }
 
-    const watchId = navigator.geolocation.watchPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords
-        const { userLocation, setUserLocation, setMapViewState } = useAppStore.getState()
-        
-        // Update store
-        setUserLocation({ latitude, longitude })
-
-        // Initial center on user (only if not already set or first run logic could be improved here, 
-        // but checking if we just got a location and it's the first one is good)
-        if (!userLocation) {
-             setMapViewState({
-               longitude,
-               latitude,
-               zoom: 15,
-             })
-        }
-      },
-      (error) => {
-        console.error('Geolocation error:', error)
-      },
-      {
-        enableHighAccuracy: true,
-        maximumAge: 10000,
-        timeout: 5000,
+    // Start geolocation watcher (updates store + cache automatically)
+    let hasCenteredOnLive = !!cached // Don't re-center if we already centered on cache
+    const cleanup = initGeolocation((location) => {
+      setUserLocation(location)
+      
+      // Center on first live location only if we didn't have cached data
+      if (!hasCenteredOnLive) {
+        setMapViewState({
+          longitude: location.longitude,
+          latitude: location.latitude,
+          zoom: 15,
+        })
+        hasCenteredOnLive = true
       }
-    )
+    })
 
-    return () => navigator.geolocation.clearWatch(watchId)
+    return () => cleanup?.()
   }, [])
 
   // Fetch Restrooms (moved from ExploreScreen to persist data)
@@ -141,16 +143,16 @@ function App() {
       const restroom = restrooms.find((r) => r.id === id)
         if (restroom) {
           useAppStore.getState().setSelectedRestroom(restroom)
-          useAppStore.getState().setMapViewState({
-            longitude: restroom.longitude,
-            latitude: restroom.latitude,
-            zoom: 16,
-          })
-          // Ensure view mode is map? ExploreScreen listens to this changes?
-          // ExploreScreen manages 'viewMode'. 
-          // If we click a marker, we are already on map.
+          // Use flyTo for smooth animation
+          mapRef.current?.flyTo(restroom.longitude, restroom.latitude, 16)
         }
   }, [restrooms])
+
+  // Fly to user location with smooth animation
+  const handleFlyToUser = useCallback(() => {
+    if (!userLocation) return
+    mapRef.current?.flyTo(userLocation.longitude, userLocation.latitude, 16)
+  }, [userLocation])
 
 
   return (
@@ -159,6 +161,7 @@ function App() {
       {/* Persistent Map Layer */}
       <div className="absolute inset-0 z-0">
           <MapboxMap 
+             ref={mapRef}
              restrooms={filteredRestrooms} 
              mode={currentScreen} 
              onMoveEnd={fetchAddress}
@@ -169,7 +172,7 @@ function App() {
       <div className="absolute inset-0 z-10 pointer-events-none">
           {currentScreen === 'explore' && (
             <div className="w-full h-full">
-               <ExploreScreen onAddClick={handleAddClick} />
+               <ExploreScreen onAddClick={handleAddClick} onFlyToUser={handleFlyToUser} />
             </div>
           )}
 

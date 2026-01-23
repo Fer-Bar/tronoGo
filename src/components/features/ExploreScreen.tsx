@@ -6,7 +6,12 @@ import { NearbyList } from './NearbyList'
 import { useAppStore } from '../../lib/store'
 import { filterAndSortRestrooms } from '../../lib/utils'
 
-export function ExploreScreen({ onAddClick }: { onAddClick: () => void }) {
+interface ExploreScreenProps {
+  onAddClick: () => void
+  onFlyToUser?: () => void
+}
+
+export function ExploreScreen({ onAddClick, onFlyToUser }: ExploreScreenProps) {
   const { restrooms, selectedRestroom, setSelectedRestroom, setMapViewState, userLocation, filters, setFilters } =
     useAppStore()
   
@@ -35,16 +40,18 @@ export function ExploreScreen({ onAddClick }: { onAddClick: () => void }) {
   }, [setSelectedRestroom])
 
   const handleCenterOnUser = useCallback(() => {
-    if (userLocation) {
-        setMapViewState({
-          longitude: userLocation.longitude,
-          latitude: userLocation.latitude,
-          zoom: 15,
-        })
+    if (!userLocation) return
+    // Use flyTo callback if provided, otherwise fall back to direct state update
+    if (onFlyToUser) {
+      onFlyToUser()
     } else {
-        alert("Obteniendo ubicación...")
+      setMapViewState({
+        longitude: userLocation.longitude,
+        latitude: userLocation.latitude,
+        zoom: 15,
+      })
     }
-  }, [setMapViewState, userLocation])
+  }, [userLocation, onFlyToUser, setMapViewState])
 
   // Filter logic moved to App/utils - we just display the count based on raw or filtered?
   // Use filterAndSortRestrooms here just for the count passed to FilterBar? 
