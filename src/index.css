@@ -1,0 +1,88 @@
+@import "tailwindcss";
+
+/* Custom CSS Variables for TronoGo Design System */
+@theme {
+  /* Typography */
+  --font-sans: "Quicksand", "Nunito", system-ui, sans-serif;
+
+  /* Base Border Radius */
+  --radius-card: 1.5rem;
+  /* 24px (rounded-3xl) */
+
+  /* Primary Violet (Brand) */
+  --color-primary-50: #F5F3FF;
+  --color-primary-100: #EDE9FE;
+  --color-primary-200: #DDD6FE;
+  --color-primary-300: #C4B5FD;
+  --color-primary-400: #A78BFA;
+  --color-primary-500: #8B5CF6;
+  --color-primary-600: #7C3AED;
+  --color-primary-700: #6D28D9;
+  --color-primary-800: #5B21B6;
+  --color-primary-900: #4C1D95;
+
+  /* Action (Emerald) */
+  --color-action-50: #ECFDF5;
+  --color-action-100: #D1FAE5;
+  --color-action-200: #A7F3D0;
+  --color-action-300: #6EE7B7;
+  --color-action-400: #34D399;
+  --color-action-500: #10B981;
+  --color-action-600: #059669;
+  --color-action-700: #047857;
+
+  /* Slate Grays (Midnight) */
+  --color-gray-50: #F8FAFC;
+  --color-gray-100: #F1F5F9;
+  --color-gray-200: #E2E8F0;
+  --color-gray-300: #CBD5E1;
+  --color-gray-400: #94A3B8;
+  --color-gray-500: #64748B;
+  --color-gray-600: #475569;
+  --color-gray-700: #334155;
+  --color-gray-800: #1E293B;
+  --color-gray-900: #0F172A;
+  --color-gray-950: #020617;
+}
+
+/* Base styles */
+html,
+body,
+#root {
+  @apply h-full w-full m-0 p-0;
+}
+
+body {
+  @apply font-sans antialiased bg-gray-950 text-gray-100;
+}
+
+/* Dark mode styles (redundant but kept for components that rely on .dark ancestor) */
+.dark body,
+html.dark body {
+  background-color: var(--color-gray-950);
+  color: var(--color-gray-100);
+}
+
+/* Mapbox CSS override */
+.mapboxgl-map {
+  @apply font-sans;
+}
+
+/* Hide mapbox attribution for cleaner mobile look */
+.mapboxgl-ctrl-attrib {
+  @apply hidden;
+}
+
+.mapboxgl-ctrl-logo {
+  @apply hidden;
+}
+
+/* Hide scrollbar for filter pills */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
