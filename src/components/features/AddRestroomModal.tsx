@@ -131,14 +131,15 @@ export function AddRestroomModal({ isOpen, onClose, onSuccess }: AddRestroomModa
             onClick={onClose}
           />
 
-          {/* Modal */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="fixed inset-x-4 top-[10%] bottom-[10%] md:top-1/2 md:-translate-y-1/2 md:max-h-[85vh] z-50 
-                       bg-white dark:bg-gray-900 rounded-3xl shadow-2xl max-w-md mx-auto overflow-hidden flex flex-col border border-gray-200 dark:border-gray-800"
-          >
+          {/* Modal Wrapper for Centering */}
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="w-full max-w-md md:max-w-3xl h-full max-h-[90vh] md:h-auto 
+                         bg-white dark:bg-gray-900 rounded-3xl shadow-2xl mx-auto overflow-hidden flex flex-col border border-gray-200 dark:border-gray-800 pointer-events-auto"
+            >
             {/* Header */}
             <div className="relative px-6 pt-6 pb-2 shrink-0">
               <button
@@ -171,7 +172,7 @@ export function AddRestroomModal({ isOpen, onClose, onSuccess }: AddRestroomModa
               {/* Type Grid */}
               <div className="mb-6">
                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Tipo de Lugar</label>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {RESTROOM_TYPES.map((type) => (
                     <button
                       key={type.id}
@@ -280,7 +281,7 @@ export function AddRestroomModal({ isOpen, onClose, onSuccess }: AddRestroomModa
               {/* Amenities Grid */}
               <div className="mb-6">
                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Servicios y Estado</label>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                   {AMENITIES.map((amenity) => (
                     <button
                       key={amenity.id}
@@ -384,6 +385,7 @@ export function AddRestroomModal({ isOpen, onClose, onSuccess }: AddRestroomModa
               </Button>
             </div>
           </motion.div>
+          </div>
         </>
       )}
     </AnimatePresence>
