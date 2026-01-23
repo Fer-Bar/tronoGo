@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { toast } from 'sonner'
 import { IconX, IconLocation, IconBuildingStore, IconToolsKitchen2, IconGasStation, IconWheelchair, IconGenderBigender, IconBabyCarriage, IconCamera, IconGenderMale, IconGenderFemale } from '@tabler/icons-react'
 import { Button } from '../ui'
 import { cn } from '../../lib/utils'
@@ -101,18 +102,21 @@ export function AddRestroomModal({ isOpen, onClose, onSuccess }: AddRestroomModa
         .select()
         .single()
 
+
       if (error) {
         console.error('Error creating restroom:', error)
-        alert('Error al crear el baño. Intenta de nuevo.')
+        toast.error('Error al crear el baño. Intenta de nuevo.')
         return
       }
 
       if (data) {
         addRestroom(data)
         onSuccess()
+        toast.success('¡Baño agregado exitosamente!')
       }
     } catch (err) {
       console.error('Error:', err)
+      toast.error('Ocurrió un error inesperado.')
     } finally {
       setIsSubmitting(false)
     }

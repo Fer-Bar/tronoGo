@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { ExploreScreen, PinPickerScreen, AddRestroomModal } from './components/features'
+import { Toaster } from 'sonner'
 import { useAppStore } from './lib/store'
 
 type Screen = 'explore' | 'pin-picker'
@@ -89,6 +90,7 @@ function App() {
         onClose={handleModalClose}
         onSuccess={handleAddSuccess}
       />
+      <Toaster richColors position="top-center" />
     </div>
   )
 }
