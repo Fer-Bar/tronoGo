@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ExploreScreen, PinPickerScreen, AddRestroomModal } from './components/features'
 import { useAppStore } from './lib/store'
 
@@ -12,6 +12,41 @@ function App() {
   useState(() => {
     document.documentElement.classList.add('dark')
   })
+
+  // Geolocation Watcher
+  useEffect(() => {
+    if (!('geolocation' in navigator)) return
+
+    const watchId = navigator.geolocation.watchPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords
+        const { userLocation, setUserLocation, setMapViewState } = useAppStore.getState()
+        
+        // Update store
+        setUserLocation({ latitude, longitude })
+
+        // Initial center on user (only if not already set or first run logic could be improved here, 
+        // but checking if we just got a location and it's the first one is good)
+        if (!userLocation) {
+             setMapViewState({
+               longitude,
+               latitude,
+               zoom: 15,
+             })
+        }
+      },
+      (error) => {
+        console.error('Geolocation error:', error)
+      },
+      {
+        enableHighAccuracy: true,
+        maximumAge: 10000,
+        timeout: 5000,
+      }
+    )
+
+    return () => navigator.geolocation.clearWatch(watchId)
+  }, [])
 
   const handleAddClick = () => {
     setCurrentScreen('pin-picker')

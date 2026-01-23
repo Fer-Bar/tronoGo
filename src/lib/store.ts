@@ -22,6 +22,10 @@ interface AppState {
     selectedRestroom: Restroom | null
     setSelectedRestroom: (restroom: Restroom | null) => void
 
+    // User location
+    userLocation: { latitude: number; longitude: number } | null
+    setUserLocation: (location: { latitude: number; longitude: number } | null) => void
+
     // Add flow - draft location
     draftLocation: DraftLocation | null
     setDraftLocation: (location: DraftLocation | null) => void
@@ -53,6 +57,9 @@ export const useAppStore = create<AppState>((set) => ({
 
     selectedRestroom: null,
     setSelectedRestroom: (selectedRestroom) => set({ selectedRestroom }),
+
+    userLocation: null,
+    setUserLocation: (userLocation) => set({ userLocation }),
 
     draftLocation: null,
     setDraftLocation: (draftLocation) => set({ draftLocation }),

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback } from 'react'
 import Map, { GeolocateControl } from 'react-map-gl/mapbox'
 import type { ViewStateChangeEvent } from 'react-map-gl/mapbox'
 import 'mapbox-gl/dist/mapbox-gl.css'
@@ -14,8 +14,8 @@ interface MapboxMapProps {
 }
 
 export function MapboxMap({ restrooms, onMarkerClick }: MapboxMapProps) {
-  const { mapViewState, setMapViewState } = useAppStore()
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null)
+  const { mapViewState, setMapViewState, userLocation } = useAppStore()
+  // const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null) // Removed
 
   const handleMove = useCallback(
     (evt: ViewStateChangeEvent) => {
@@ -28,29 +28,8 @@ export function MapboxMap({ restrooms, onMarkerClick }: MapboxMapProps) {
     [setMapViewState]
   )
 
-  // Get user location on mount
-  useEffect(() => {
-    if ('geolocation' in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setUserLocation({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-          })
-          // Center map on user location
-          setMapViewState({
-            longitude: position.coords.longitude,
-            latitude: position.coords.latitude,
-            zoom: 15,
-          })
-        },
-        () => {
-          // Geolocation denied or failed, use default
-          console.log('Geolocation not available, using default location')
-        }
-      )
-    }
-  }, [setMapViewState])
+  // Get user location on mount - REMOVED (Handled in App.tsx)
+  // useEffect(() => { ... }, [])
 
   return (
     <Map
@@ -72,7 +51,7 @@ export function MapboxMap({ restrooms, onMarkerClick }: MapboxMapProps) {
 
       {/* User location marker */}
       {userLocation && (
-        <LocationMarker latitude={userLocation.lat} longitude={userLocation.lng} />
+        <LocationMarker latitude={userLocation.latitude} longitude={userLocation.longitude} />
       )}
 
       {/* Restroom markers */}

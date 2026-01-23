@@ -11,11 +11,11 @@ import type { FilterState } from '../../lib/types'
 import { calculateDistance } from '../../lib/utils'
 
 export function ExploreScreen({ onAddClick }: { onAddClick: () => void }) {
-  const { restrooms, setRestrooms, selectedRestroom, setSelectedRestroom, setMapViewState } =
+  const { restrooms, setRestrooms, selectedRestroom, setSelectedRestroom, setMapViewState, userLocation } =
     useAppStore()
   
   const [viewMode, setViewMode] = useState<'map' | 'list'>('map')
-  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null)
+  // const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null) // Removed
   
   const [filters, setFilters] = useState<FilterState>({
     type: [],
@@ -47,16 +47,8 @@ export function ExploreScreen({ onAddClick }: { onAddClick: () => void }) {
     fetchRestrooms()
   }, [setRestrooms])
 
-  // Get User Location
-  useEffect(() => {
-    if ('geolocation' in navigator) {
-       navigator.geolocation.getCurrentPosition(
-         (pos) => setUserLocation({ latitude: pos.coords.latitude, longitude: pos.coords.longitude }),
-         (err) => console.log('Location error', err),
-         { enableHighAccuracy: true }
-       )
-    }
-  }, [])
+  // Get User Location - REMOVED (Handled in App.tsx)
+  // useEffect(() => { ... }, [])
 
   const handleMarkerClick = useCallback(
     (id: string) => {
@@ -74,17 +66,17 @@ export function ExploreScreen({ onAddClick }: { onAddClick: () => void }) {
   }, [setSelectedRestroom])
 
   const handleCenterOnUser = useCallback(() => {
-    if ('geolocation' in navigator) {
-      navigator.geolocation.getCurrentPosition((position) => {
+    if (userLocation) {
         setMapViewState({
-          longitude: position.coords.longitude,
-          latitude: position.coords.latitude,
+          longitude: userLocation.longitude,
+          latitude: userLocation.latitude,
           zoom: 15,
         })
-        setUserLocation({ latitude: position.coords.latitude, longitude: position.coords.longitude })
-      })
+    } else {
+        // Fallback or message if location not yet available
+        alert("Obteniendo ubicación...")
     }
-  }, [setMapViewState])
+  }, [setMapViewState, userLocation])
 
   // Advanced Filtering Logic
   const filteredRestrooms = restrooms.filter((restroom) => {
