@@ -37,7 +37,7 @@ function App() {
   }
 
   return (
-    <div className="h-screen w-screen overflow-hidden">
+    <div className="h-dvh w-screen overflow-hidden">
       {currentScreen === 'explore' && (
         <ExploreScreen onAddClick={handleAddClick} />
       )}
