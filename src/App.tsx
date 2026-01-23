@@ -5,6 +5,7 @@ import { useAppStore } from './lib/store'
 import { MapboxMap } from './components/map'
 import { filterAndSortRestrooms } from './lib/utils'
 import { MAPBOX_TOKEN } from './lib/constants'
+import type { Restroom } from './lib/database.types'
 
 type Screen = 'explore' | 'pin-picker'
 
@@ -72,7 +73,7 @@ function App() {
       }
 
       if (data) {
-        useAppStore.getState().setRestrooms(data as any) 
+        useAppStore.getState().setRestrooms(data as Restroom[]) 
       }
     })
   }, [])
