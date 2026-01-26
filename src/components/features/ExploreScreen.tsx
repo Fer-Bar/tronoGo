@@ -3,6 +3,7 @@ import { IconPlus, IconCurrentLocation, IconList, IconMap } from '@tabler/icons-
 import { FilterBar } from './FilterBar'
 import { RestroomDetail } from './RestroomDetail'
 import { NearbyList } from './NearbyList'
+import { ProfileButton } from '../auth/ProfileButton'
 import { useAppStore } from '../../lib/store'
 import { filterAndSortRestrooms } from '../../lib/utils'
 
@@ -73,6 +74,11 @@ export function ExploreScreen({ onAddClick, onFlyToUser }: ExploreScreenProps) {
             onFiltersChange={setFilters} 
             bathroomCount={filteredRestrooms.length} 
         />
+      </div>
+
+      {/* Profile Button */}
+      <div className="absolute top-4 left-4 z-30 pointer-events-auto">
+        <ProfileButton />
       </div>
 
       {/* Map Mode Toggle Button */}

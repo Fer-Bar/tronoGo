@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { ExploreScreen, PinPickerScreen, AddRestroomModal } from './components/features'
 import { Toaster } from 'sonner'
 import { useAppStore } from './lib/store'
+import { useAuthStore } from './lib/authStore'
 import { MapboxMap } from './components/map'
 import type { MapboxMapHandle } from './components/map/MapboxMap'
 import { filterAndSortRestrooms } from './lib/utils'
@@ -21,6 +22,12 @@ function App() {
   useState(() => {
     document.documentElement.classList.add('dark')
   })
+
+  // Initialize auth listener
+  useEffect(() => {
+    const cleanup = useAuthStore.getState().initialize()
+    return () => cleanup()
+  }, [])
 
   // Load cached location immediately, then start watcher for updates
   useEffect(() => {
