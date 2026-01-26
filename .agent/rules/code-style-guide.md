@@ -5,6 +5,7 @@ trigger: always_on
 ## Convenciones
 - Usa pnpm para todo: pnpm install, pnpm add, pnpm dlx, pnpm dev, pnpm build
 - TypeScript es obligatorio
+- No uses alerts
 - Usa siempre Tailwind CSS para estilos (v4 @tailwindcss/vite)
 - Iconos de tabler-icons. Importación explícita, nunca barrels
 - Preferir ESM y sintaxis moderna del navegador

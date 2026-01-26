@@ -30,3 +30,4 @@ GEMINI.md
 constitution.md
 .vercel
 .env*.local
+.agent

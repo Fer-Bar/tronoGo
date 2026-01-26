@@ -1,73 +1,50 @@
-# React + TypeScript + Vite
+# TronoGo - "Waze for Restrooms"
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+TronoGo is a hyper-fast, community-driven mobile web app designed to help users find nearby toilets instantly.
 
-Currently, two official plugins are available:
+## Project Vision
+- **Core Value:** Speed and Trust. Users need a bathroom *now*.
+- **Primary Interface:** The Map is the UI. No complex menus, no landing pages.
+- **Design Source:** UI designs generated via Stitch MCP.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Tech Stack & Architecture
+- **Bundler & Framework:** Vite + React + TypeScript
+- **Styling:** Tailwind CSS v4
+- **Map Provider:** `react-map-gl` (Mapbox GL JS)
+- **Icons:** `@tabler/icons-react`
+- **State Management:** Zustand
+- **Database & Auth:** Supabase (PostgreSQL)
 
-## React Compiler
+## Getting Started
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Prerequisites
+- Node.js
+- pnpm (Package Manager)
 
-## Expanding the ESLint configuration
+### Installation
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   pnpm install
+   ```
+3. Set up environment variables locally (`.env`):
+   ```
+   VITE_MAPBOX_TOKEN=your_token_here
+   VITE_SUPABASE_URL=your_url
+   VITE_SUPABASE_ANON_KEY=your_key
+   ```
+4. Run the development server:
+   ```bash
+   pnpm dev
+   ```
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Workflow & Conventions
+- **Package Manager:** `pnpm` exclusively.
+- **Strict TypeScript:** No `any` or `unknown`.
+- **Linting:** code must pass `pnpm lint`.
+- **Testing:** `pnpm test` (Vitest).
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## Project Structure
+- `src/features`: Feature-based folders (map, restrooms).
+- `src/components/ui`: Shared UI components.
+- `src/lib`: Shared utilities and helpers.
