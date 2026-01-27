@@ -94,10 +94,11 @@ function App() {
 
 
   // Address Fetch for Pin Picker
-  const fetchAddress = useCallback(async () => {
-    if (currentScreen !== 'pin-picker') return
+  const fetchAddress = useCallback(async (forceScreen?: Screen, coords?: { longitude: number; latitude: number }) => {
+    const screen = forceScreen ?? currentScreen
+    if (screen !== 'pin-picker') return
     
-    const { longitude, latitude } = mapViewState
+    const { longitude, latitude } = coords ?? mapViewState
     setPickerAddress('Cargando...')
 
     try {
@@ -107,7 +108,10 @@ function App() {
       const data = await response.json()
       
       if (data.features && data.features.length > 0) {
-        setPickerAddress(data.features[0].place_name)
+        // Extract street only (first part before comma)
+        const fullAddress = data.features[0].place_name as string
+        const streetOnly = fullAddress.split(',')[0].trim()
+        setPickerAddress(streetOnly)
       } else {
         setPickerAddress('Ubicación seleccionada')
       }
@@ -119,7 +123,7 @@ function App() {
 
   const handleAddClick = () => {
     setCurrentScreen('pin-picker')
-    fetchAddress() // Fetch immediately on switch
+    fetchAddress('pin-picker') // Force correct screen to avoid stale state
   }
 
   const handlePinPickerBack = () => {
@@ -171,7 +175,7 @@ function App() {
              ref={mapRef}
              restrooms={filteredRestrooms} 
              mode={currentScreen} 
-             onMoveEnd={fetchAddress}
+             onMoveEnd={(coords) => fetchAddress(undefined, coords)}
              onMarkerClick={handleMarkerClick}
           />
       </div>

@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
-import { IconX, IconLocation, IconBuildingStore, IconToolsKitchen2, IconGasStation, IconWheelchair, IconGenderBigender, IconBabyCarriage, IconCamera, IconGenderMale, IconGenderFemale } from '@tabler/icons-react'
+import { IconX, IconLocation, IconBuildingStore, IconToolsKitchen2, IconGasStation, IconWheelchair, IconGenderBigender, IconBabyCarriage, IconCamera, IconGenderMale, IconGenderFemale, IconToiletPaper, IconDroplet, IconWash } from '@tabler/icons-react'
 import { Button } from '../ui'
 import { cn } from '../../lib/utils'
 import { supabase } from '../../lib/supabase'
@@ -15,18 +15,19 @@ interface AddRestroomModalProps {
 }
 
 const RESTROOM_TYPES: { id: RestroomType; label: string; sublabel: string; icon: React.ReactNode }[] = [
-  { id: 'public', label: 'Público', sublabel: 'Gratis', icon: <IconLocation size={28} /> },
-  { id: 'commerce', label: 'Comercio', sublabel: 'Pago', icon: <IconBuildingStore size={28} /> },
-  { id: 'restaurant', label: 'Restaurante', sublabel: 'Clientes', icon: <IconToolsKitchen2 size={28} /> },
-  { id: 'gas_station', label: 'Gasolinera', sublabel: '', icon: <IconGasStation size={28} /> },
+  { id: 'public', label: 'Público', sublabel: 'Gratis', icon: <IconLocation size={22} /> },
+  { id: 'commerce', label: 'Comercio', sublabel: 'Pago', icon: <IconBuildingStore size={22} /> },
+  { id: 'restaurant', label: 'Comida', sublabel: 'Cafés, etc', icon: <IconToolsKitchen2 size={22} /> },
+  { id: 'gas_station', label: 'Gasolinera', sublabel: '', icon: <IconGasStation size={22} /> },
 ]
 
 const AMENITIES: { id: Amenity; label: string; icon: React.ReactNode }[] = [
-  { id: 'accessible', label: 'Accesible', icon: <IconWheelchair size={16} /> },
-  { id: 'baby_changing', label: 'Cambiador', icon: <IconBabyCarriage size={16} /> },
-  { id: 'paper', label: 'Papel', icon: <IconBuildingStore size={16} /> }, // Using generic icon if ToiletPaper not imported or use different
-  { id: 'soap', label: 'Jabón', icon: <IconToolsKitchen2 size={16} /> }, // Using generic
-  { id: 'private', label: 'Privado', icon: <IconGenderBigender size={16} /> },
+  { id: 'accessible', label: 'Accesible', icon: <IconWheelchair size={18} /> },
+  { id: 'baby_changing', label: 'Cambiador', icon: <IconBabyCarriage size={18} /> },
+  { id: 'paper', label: 'Papel', icon: <IconToiletPaper size={18} /> },
+  { id: 'soap', label: 'Jabón', icon: <IconDroplet size={18} /> },
+  { id: 'sink', label: 'Lavamanos', icon: <IconWash size={18} /> },
+  { id: 'private', label: 'Privado', icon: <IconGenderBigender size={18} /> },
 ]
 
 export function AddRestroomModal({ isOpen, onClose, onSuccess }: AddRestroomModalProps) {
@@ -45,10 +46,29 @@ export function AddRestroomModal({ isOpen, onClose, onSuccess }: AddRestroomModa
   const [photos] = useState<string[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // Initialize name based on type
-  useState(() => {
-    setName(`Baño ${RESTROOM_TYPES.find(t => t.id === 'public')?.label || 'Público'}`)
-  })
+  // Reset form when modal closes
+  const resetForm = () => {
+    setName('')
+    setSelectedType('public')
+    setPrice('0')
+    setIsFree(true)
+    setGenderAmenities([])
+    setFeatures([])
+    setOpenTime('')
+    setCloseTime('')
+    setDescription('')
+  }
+
+  useEffect(() => {
+    if (!isOpen) {
+      resetForm()
+    }
+  }, [isOpen])
+
+  // Generate suggested name based on type and street
+  const streetName = draftLocation?.address?.split(',')[0]?.trim() || ''
+  const typeLabel = RESTROOM_TYPES.find(t => t.id === selectedType)?.label || 'Baño'
+  const suggestedName = streetName ? `${typeLabel} - ${streetName}` : typeLabel
 
   const toggleGender = (gender: 'male' | 'female' | 'unisex') => {
     const genderAmenity = gender as Amenity
@@ -82,8 +102,13 @@ export function AddRestroomModal({ isOpen, onClose, onSuccess }: AddRestroomModa
       const allAmenities = [...genderAmenities, ...features]
       const numericPrice = isFree ? 0 : parseFloat(price) || 0
 
+      // Auto-generate name if empty: "[Type Label] [Street]"
+      const typeLabel = RESTROOM_TYPES.find(t => t.id === selectedType)?.label || 'Baño'
+      const street = draftLocation.address?.split(',')[0]?.trim() || ''
+      const finalName = name.trim() || `${typeLabel} ${street}`.trim()
+
       const newRestroom = {
-        name: name || `Baño ${selectedType}`, // Fallback
+        name: finalName,
         latitude: draftLocation.latitude,
         longitude: draftLocation.longitude,
         address: draftLocation.address,
@@ -166,19 +191,7 @@ export function AddRestroomModal({ isOpen, onClose, onSuccess }: AddRestroomModa
             {/* Scrollable Content */}
             <div className="flex-1 overflow-y-auto px-6 py-4">
               
-              {/* Name Input */}
-              <div className="mb-6">
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Nombre</label>
-                <input 
-                  type="text" 
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-xl px-4 py-3 text-gray-900 dark:text-white font-semibold focus:ring-2 focus:ring-primary-500 transition-all"
-                  placeholder="Ej. Baños Plaza Central"
-                />
-              </div>
-
-              {/* Type Grid */}
+              {/* Type Grid - FIRST */}
               <div className="mb-6">
                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Tipo de Lugar</label>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -199,7 +212,7 @@ export function AddRestroomModal({ isOpen, onClose, onSuccess }: AddRestroomModa
                         {type.icon}
                       </span>
                       <span className={cn(
-                        'text-sm font-bold',
+                        'text-sm font-semibold',
                         selectedType === type.id ? 'text-primary-700 dark:text-primary-300' : 'text-gray-700 dark:text-gray-300'
                       )}>
                         {type.label}
@@ -207,6 +220,26 @@ export function AddRestroomModal({ isOpen, onClose, onSuccess }: AddRestroomModa
                     </button>
                   ))}
                 </div>
+              </div>
+
+              {/* Name Input - SECOND with dynamic placeholder */}
+              <div className="mb-6">
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">
+                  Nombre <span className="text-gray-400 font-normal">(opcional)</span>
+                </label>
+                <input 
+                  type="text" 
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  onFocus={() => {
+                    // Clear if user hasn't customized the name
+                    if (name === '' || name === suggestedName) {
+                      setName('')
+                    }
+                  }}
+                  className="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-xl px-4 py-3 text-gray-900 dark:text-white font-semibold focus:ring-2 focus:ring-primary-500 transition-all"
+                  placeholder={suggestedName}
+                />
               </div>
 
               {/* Price Section */}
@@ -258,38 +291,38 @@ export function AddRestroomModal({ isOpen, onClose, onSuccess }: AddRestroomModa
                     <button 
                       onClick={() => toggleGender('male')}
                       className={cn(
-                        "flex flex-col items-center justify-center gap-2 py-3 px-2 rounded-2xl border-2 transition-all h-24",
+                        "flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border-2 transition-all",
                         genderAmenities.includes('male')
                           ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300"
                           : "border-gray-200 dark:border-gray-700 text-gray-500 hover:border-blue-300 hover:bg-gray-50 dark:hover:bg-gray-800"
                       )}
                     >
-                      <IconGenderMale size={24} />
-                      <span className="text-xs font-bold leading-tight">Hombre</span>
+                      <IconGenderMale size={22} />
+                      <span className="text-sm font-semibold">Hombre</span>
                     </button>
                     <button 
                       onClick={() => toggleGender('female')}
                       className={cn(
-                        "flex flex-col items-center justify-center gap-2 py-3 px-2 rounded-2xl border-2 transition-all h-24",
+                        "flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border-2 transition-all",
                         genderAmenities.includes('female')
                           ? "border-pink-500 bg-pink-50 dark:bg-pink-900/20 text-pink-700 dark:text-pink-300"
                           : "border-gray-200 dark:border-gray-700 text-gray-500 hover:border-pink-300 hover:bg-gray-50 dark:hover:bg-gray-800"
                       )}
                     >
-                      <IconGenderFemale size={24} />
-                      <span className="text-xs font-bold leading-tight">Mujer</span>
+                      <IconGenderFemale size={22} />
+                      <span className="text-sm font-semibold">Mujer</span>
                     </button>
                     <button 
                       onClick={() => toggleGender('unisex')}
                       className={cn(
-                        "flex flex-col items-center justify-center gap-2 py-3 px-2 rounded-2xl border-2 transition-all h-24",
+                        "flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border-2 transition-all",
                         genderAmenities.includes('unisex')
                           ? "border-purple-500 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300"
                           : "border-gray-200 dark:border-gray-700 text-gray-500 hover:border-purple-300 hover:bg-gray-50 dark:hover:bg-gray-800"
                       )}
                     >
-                      <IconGenderBigender size={24} />
-                      <span className="text-xs font-bold leading-tight">Unisex</span>
+                      <IconGenderBigender size={22} />
+                      <span className="text-sm font-semibold">Unisex</span>
                     </button>
                  </div>
               </div>
@@ -303,10 +336,10 @@ export function AddRestroomModal({ isOpen, onClose, onSuccess }: AddRestroomModa
                       key={amenity.id}
                       onClick={() => toggleFeature(amenity.id)}
                       className={cn(
-                        'flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm transition-all text-left border',
+                        'flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm transition-all text-left border-2',
                         features.includes(amenity.id)
-                          ? 'bg-primary-50 dark:bg-primary-900/20 border-primary-200 dark:border-primary-800 text-primary-700 dark:text-primary-300'
-                          : 'bg-transparent border-gray-100 dark:border-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
+                          ? 'bg-primary-50 dark:bg-primary-900/20 border-primary-300 dark:border-primary-700 text-primary-700 dark:text-primary-300'
+                          : 'bg-transparent border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
                       )}
                     >
                       <span className={features.includes(amenity.id) ? "text-primary-600" : "text-gray-400"}>

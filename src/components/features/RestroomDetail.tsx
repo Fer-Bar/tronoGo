@@ -1,4 +1,4 @@
-import { IconX, IconNavigation, IconMapPin, IconCurrencyDollar, IconStar, IconWheelchair, IconBabyCarriage, IconGenderBigender, IconBuildingStore, IconToolsKitchen2, IconExternalLink, IconLock, IconStarFilled } from '@tabler/icons-react'
+import { IconX, IconNavigation, IconMapPin, IconCash, IconStar, IconWheelchair, IconBabyCarriage, IconGenderBigender, IconBuildingStore, IconToolsKitchen2, IconExternalLink, IconLock, IconStarFilled } from '@tabler/icons-react'
 import { Button } from '../ui/Button'
 import { BottomSheet } from '../ui/BottomSheet'
 import { TYPE_LABELS, AMENITY_LABELS } from '../../lib/constants'
@@ -64,7 +64,7 @@ export function RestroomDetail({ restroom, isOpen, onClose }: RestroomDetailProp
             </div>
             <div className="h-4 w-px bg-gray-200 dark:bg-gray-700" />
             <div className="flex items-center gap-1.5">
-              <IconCurrencyDollar className="size-5 text-gray-400" />
+              <IconCash className="size-5 text-gray-400" />
               <span className={restroom.is_free ? "text-emerald-500 font-bold" : "text-gray-900 dark:text-white font-medium"}>
                 {restroom.is_free ? "Gratis" : `${restroom.price} Bs`}
               </span>
@@ -91,9 +91,9 @@ export function RestroomDetail({ restroom, isOpen, onClose }: RestroomDetailProp
                   return (
                     <div
                       key={amenity}
-                      className="flex items-center gap-2 px-3 py-2 bg-gray-50 dark:bg-gray-800/50 rounded-xl text-sm border border-gray-100 dark:border-gray-800"
+                      className="flex items-center gap-2 px-3 py-2 bg-gray-50 dark:bg-gray-800/50 rounded-xl text-sm border-2 border-gray-200 dark:border-gray-700"
                     >
-                      <Icon className="size-4 text-violet-500" />
+                      <Icon className="size-[18px] text-violet-500" />
                       <span className="font-medium text-gray-700 dark:text-gray-200">
                         {AMENITY_LABELS[amenity] || amenity}
                       </span>

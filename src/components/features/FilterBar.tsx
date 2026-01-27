@@ -6,10 +6,11 @@ import {
   IconGenderBigender,
   IconAccessible,
   IconBabyCarriage,
-  IconCurrencyDollarOff,
-  IconCurrencyDollar,
   IconToiletPaper,
-  IconToolsKitchen2,
+  IconDroplet,
+  IconWash,
+  IconCurrencyDollar,
+  IconCurrencyDollarOff,
 } from '@tabler/icons-react'
 
 interface FilterBarProps {
@@ -25,6 +26,7 @@ export function FilterBar({ filters, onFiltersChange, bathroomCount }: FilterBar
     (filters.hasBabyChanger ? 1 : 0) +
     (filters.hasPaper ? 1 : 0) +
     (filters.hasSoap ? 1 : 0) +
+    (filters.hasSink ? 1 : 0) +
     (filters.isFree !== null ? 1 : 0)
 
   const toggleType = (type: "male" | "female" | "unisex") => {
@@ -39,6 +41,7 @@ export function FilterBar({ filters, onFiltersChange, bathroomCount }: FilterBar
       hasBabyChanger: null,
       hasPaper: null,
       hasSoap: null,
+      hasSink: null,
       isFree: null,
     })
   }
@@ -102,10 +105,16 @@ export function FilterBar({ filters, onFiltersChange, bathroomCount }: FilterBar
           onClick={() => onFiltersChange({ ...filters, hasPaper: filters.hasPaper ? null : true })}
         />
         <FilterPill
-          icon={<IconToolsKitchen2 className="h-3.5 w-3.5" />}
+          icon={<IconDroplet className="h-3.5 w-3.5" />}
           label="Jabón"
           isActive={filters.hasSoap === true}
           onClick={() => onFiltersChange({ ...filters, hasSoap: filters.hasSoap ? null : true })}
+        />
+        <FilterPill
+          icon={<IconWash className="h-3.5 w-3.5" />}
+          label="Lavamanos"
+          isActive={filters.hasSink === true}
+          onClick={() => onFiltersChange({ ...filters, hasSink: filters.hasSink ? null : true })}
         />
 
         <FilterPill

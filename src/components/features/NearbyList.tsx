@@ -1,4 +1,4 @@
-import { IconX, IconNavigation, IconStar, IconCurrency } from '@tabler/icons-react'
+import { IconX, IconNavigation, IconStar, IconCash } from '@tabler/icons-react'
 import { Button } from '../ui/Button'
 import { formatDistance, calculateDistance } from '../../lib/utils'
 import { TYPE_LABELS } from '../../lib/constants'
@@ -81,7 +81,7 @@ export function NearbyList({
                         </div>
                       )}
                       <div className="flex items-center gap-1">
-                        <IconCurrency className="size-3.5 text-gray-400" />
+                        <IconCash className="size-3.5 text-gray-400" />
                         <span className={restroom.is_free ? "text-emerald-500 font-bold" : "text-gray-600 dark:text-gray-400"}>
                           {restroom.is_free ? "Gratis" : `${restroom.price} Bs`}
                         </span>

@@ -74,12 +74,12 @@ export function PinPickerScreen({ onConfirm, onBack, address }: PinPickerScreenP
       </div>
 
       {/* Confirm button */}
-      <div className="absolute bottom-8 inset-x-4 z-20 pointer-events-auto">
+      <div className="absolute bottom-8 inset-x-4 z-20 pointer-events-auto flex justify-center">
         <Button 
           variant="primary" 
           size="lg" 
           onClick={handleConfirm}
-          className="w-full"
+          className="w-full max-w-sm"
         >
           <IconMapPin size={20} />
           Confirmar Ubicación

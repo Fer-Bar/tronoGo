@@ -31,3 +31,4 @@ constitution.md
 .vercel
 .env*.local
 .agent
+supabase/

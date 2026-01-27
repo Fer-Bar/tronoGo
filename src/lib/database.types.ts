@@ -8,7 +8,7 @@ export type Json =
 
 export type RestroomStatus = 'open' | 'closed' | 'unknown'
 export type RestroomType = 'public' | 'commerce' | 'restaurant' | 'gas_station' | 'other'
-export type Amenity = 'accessible' | 'unisex' | 'baby_changing' | 'paper' | 'soap' | 'private' | 'male' | 'female'
+export type Amenity = 'accessible' | 'unisex' | 'baby_changing' | 'paper' | 'soap' | 'sink' | 'private' | 'male' | 'female'
 
 export interface Restroom {
     id: string

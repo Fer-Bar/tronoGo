@@ -83,9 +83,9 @@ export function ExploreScreen({ onAddClick, onFlyToUser }: ExploreScreenProps) {
 
       {/* Map Mode Toggle Button */}
       <div className="absolute top-[4.5rem] right-3 z-30 pointer-events-auto">
-          <button
+            <button
             onClick={() => setViewMode(prev => prev === 'map' ? 'list' : 'map')}
-            className="flex items-center gap-2 px-4 py-2 bg-white/95 dark:bg-gray-900/95 backdrop-blur border border-gray-200 dark:border-gray-800 rounded-full shadow-lg text-sm font-bold text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-all active:scale-95"
+            className="flex items-center gap-2 px-4 py-2 bg-white/95 dark:bg-gray-900/95 backdrop-blur border border-gray-200 dark:border-gray-800 rounded-full shadow-lg text-sm font-semibold text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-all active:scale-95"
           >
              {viewMode === 'map' ? (
                 <>

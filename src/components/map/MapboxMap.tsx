@@ -12,7 +12,7 @@ interface MapboxMapProps {
   restrooms?: Restroom[]
   onMarkerClick?: (id: string) => void
   mode?: 'explore' | 'pin-picker'
-  onMoveEnd?: () => void
+  onMoveEnd?: (coords: { longitude: number; latitude: number }) => void
 }
 
 export interface MapboxMapHandle {
@@ -52,7 +52,10 @@ export const MapboxMap = forwardRef<MapboxMapHandle, MapboxMapProps>(
         ref={mapRef}
         {...mapViewState}
         onMove={handleMove}
-        onMoveEnd={onMoveEnd}
+        onMoveEnd={(evt) => onMoveEnd?.({
+          longitude: evt.viewState.longitude,
+          latitude: evt.viewState.latitude,
+        })}
         mapStyle={MAP_STYLE}
         mapboxAccessToken={MAPBOX_TOKEN}
         style={{ width: '100%', height: '100%' }}

@@ -69,6 +69,11 @@ export function filterAndSortRestrooms(
             return false
         }
 
+        // New: Sink
+        if (filters.hasSink && !restroom.amenities.includes('sink')) {
+            return false
+        }
+
         // 3. Price (Free / Paid)
         if (filters.isFree !== null && restroom.is_free !== filters.isFree) {
             return false

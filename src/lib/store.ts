@@ -62,6 +62,7 @@ const DEFAULT_FILTERS: FilterState = {
     hasBabyChanger: null,
     hasPaper: null,
     hasSoap: null,
+    hasSink: null,
     isFree: null,
 }
 
