@@ -76,8 +76,8 @@ export function ExploreScreen({ onAddClick, onFlyToUser }: ExploreScreenProps) {
         />
       </div>
 
-      {/* Profile Button */}
-      <div className="absolute top-4 left-4 z-30 pointer-events-auto">
+      {/* Profile Button - Bottom left for ergonomic mobile access */}
+      <div className="absolute bottom-6 left-6 z-30 pointer-events-auto">
         <ProfileButton />
       </div>
 

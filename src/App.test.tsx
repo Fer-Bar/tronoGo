@@ -41,15 +41,38 @@ vi.mock('./lib/supabase', () => ({
   }
 }))
 
+import { useAppStore } from './lib/store'
+
 // Mock geolocation
 vi.mock('./lib/geolocation', () => ({
   getCachedLocation: () => null,
   initGeolocation: () => () => {}
 }))
 
+// Mock Auth Store - fix initialization error
+vi.mock('./lib/authStore', () => ({
+  useAuthStore: Object.assign(
+    () => ({
+      initialize: vi.fn(() => () => {}), 
+    }),
+    { getState: () => ({ initialize: vi.fn(() => () => {}) }) }
+  )
+}))
+
 describe('TronoGo App Flow', () => {
     beforeEach(() => {
         vi.clearAllMocks()
+        // Reset app store state
+        useAppStore.setState({
+            restrooms: [],
+            selectedRestroom: null,
+            mapViewState: { longitude: -99.1332, latitude: 19.4326, zoom: 13 },
+            userLocation: null,
+            filters: { type: [], isAccessible: null, hasBabyChanger: null, hasPaper: null, hasSoap: null, isFree: null },
+            isAddModalOpen: false,
+            draftLocation: null,
+            isDarkMode: false
+        })
     })
 
     it('UC-01: Renders Explore Screen and Map initially', async () => {
