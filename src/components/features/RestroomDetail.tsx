@@ -1,5 +1,6 @@
 import { IconX, IconMapPin, IconStar, IconStarFilled, IconClock } from '@tabler/icons-react'
 import { RestroomActions } from './RestroomActions'
+import { RestroomComments } from './RestroomComments'
 import { BottomSheet } from '../ui/BottomSheet'
 import { TYPE_LABELS, AMENITY_LABELS, TYPE_ICONS, AMENITY_ICONS } from '../../lib/constants'
 import { formatShortAddress, formatDistance, calculateDistance } from '../../lib/utils'
@@ -232,8 +233,8 @@ function ExpandedView({ restroom, onClose }: { restroom: Restroom; onClose: () =
               <IconStarFilled className="size-4" />
             </div>
           </div>
-          <div className="bg-gray-800/40 p-4 rounded-xl border border-white/5 text-center">
-            <p className="text-sm text-gray-500">Las opiniones estaran disponibles pronto.</p>
+          <div className="pt-2">
+            <RestroomComments restroomId={restroom.id} />
           </div>
         </div>
       </div>

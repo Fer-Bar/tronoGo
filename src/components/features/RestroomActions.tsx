@@ -2,7 +2,7 @@ import { IconNavigation, IconBookmark, IconShare } from '@tabler/icons-react'
 import { toast } from 'sonner'
 import { useAuthStore } from '../../lib/authStore'
 import { supabase } from '../../lib/supabase'
-import type { Restroom } from '../../lib/database.types'
+import type { Restroom, TablesInsert } from '../../lib/database.types'
 import { useState, useEffect } from 'react'
 
 interface RestroomActionsProps {
@@ -76,12 +76,15 @@ export function RestroomActions({ restroom }: RestroomActionsProps) {
         toast.success('Eliminado de favoritos')
       } else {
         // Add bookmark
+        const bookmarkData: TablesInsert<'bookmarks'> = {
+          user_id: user.id,
+          restroom_id: restroom.id
+        }
+        
         const { error } = await supabase
           .from('bookmarks')
-          .insert({
-            user_id: user.id,
-            restroom_id: restroom.id
-          })
+          // @ts-expect-error Supabase type inference failing for insert
+          .insert(bookmarkData)
         
         if (error) throw error
         toast.success('Guardado en favoritos')

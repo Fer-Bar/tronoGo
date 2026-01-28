@@ -6,7 +6,7 @@ import { Button } from '../ui'
 import { cn } from '../../lib/utils'
 import { supabase } from '../../lib/supabase'
 import { useAppStore } from '../../lib/store'
-import type { RestroomType, Amenity } from '../../lib/database.types'
+import type { RestroomType, Amenity, TablesInsert } from '../../lib/database.types'
 import { uploadImageToR2 } from '../../utils/upload'
 import { TYPE_ICONS, AMENITY_ICONS } from '../../lib/constants'
 
@@ -147,7 +147,7 @@ export function AddRestroomModal({ isOpen, onClose, onSuccess }: AddRestroomModa
       const street = draftLocation.address?.split(',')[0]?.trim() || ''
       const finalName = name.trim() || `${typeLabel} ${street}`.trim()
 
-      const newRestroom = {
+      const newRestroom: TablesInsert<'restrooms'> = {
         name: finalName,
         latitude: draftLocation.latitude,
         longitude: draftLocation.longitude,
@@ -163,12 +163,13 @@ export function AddRestroomModal({ isOpen, onClose, onSuccess }: AddRestroomModa
         closing_time: closeTime || null,
         description: description || null,
         photos: uploadedPhotoUrls,
+        is_free: isFree,
       }
 
       const { data, error } = await supabase
         .from('restrooms')
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .insert(newRestroom as any)
+        // @ts-expect-error Supabase type inference failing for insert
+        .insert(newRestroom)
         .select()
         .single()
 
