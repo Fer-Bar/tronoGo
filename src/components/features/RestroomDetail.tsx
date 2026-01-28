@@ -117,9 +117,12 @@ function ExpandedView({ restroom, onClose }: { restroom: Restroom; onClose: () =
       {/* Hero Image Section */}
       <div className="w-full h-64 relative shrink-0 bg-gray-800">
         {heroImage ? (
-          <div 
-            className="w-full h-full bg-cover bg-center"
-            style={{ backgroundImage: `url("${heroImage}")` }}
+          <img 
+            src={heroImage} 
+            alt={restroom.name}
+            loading="lazy"
+            decoding="async"
+            className="w-full h-full object-cover transform transition-transform duration-700 hover:scale-105"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary-900/40 to-gray-900">

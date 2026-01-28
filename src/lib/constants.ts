@@ -1,3 +1,4 @@
+import type { TablerIcon } from '@tabler/icons-react'
 // Mapbox configuration
 export const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN
 
@@ -63,7 +64,7 @@ import {
     IconGenderAgender
 } from '@tabler/icons-react'
 
-export const TYPE_ICONS: Record<string, any> = {
+export const TYPE_ICONS: Record<string, TablerIcon> = {
     public: IconBuilding,
     commerce: IconBuildingStore,
     restaurant: IconToolsKitchen2,
@@ -71,7 +72,7 @@ export const TYPE_ICONS: Record<string, any> = {
     other: IconBuilding,
 }
 
-export const AMENITY_ICONS: Record<string, any> = {
+export const AMENITY_ICONS: Record<string, TablerIcon> = {
     accessible: IconWheelchair,
     baby_changing: IconBabyCarriage,
     paper: IconToiletPaper,

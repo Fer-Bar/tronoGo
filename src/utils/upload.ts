@@ -1,12 +1,16 @@
 import { supabase } from '../lib/supabase';
+import { compressImage } from './imageOptimizer';
 
 /**
  * Uploads a file to Cloudflare R2 using a signed URL from Supabase Edge Function.
  * @param file The file object to upload.
  * @returns The public URL of the uploaded file.
  */
-export async function uploadImageToR2(file: File): Promise<string> {
-    // 1. Get signed URL from Edge Function
+export async function uploadImageToR2(originalFile: File): Promise<string> {
+    // 1. Optimize image
+    const file = await compressImage(originalFile);
+
+    // 2. Get signed URL from Edge Function
     const { data, error } = await supabase.functions.invoke('get-upload-url', {
         body: {
             filename: file.name,
