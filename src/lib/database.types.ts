@@ -38,6 +38,26 @@ export interface Database {
                 Row: Restroom
                 Insert: Omit<Restroom, 'id' | 'created_at'>
                 Update: Partial<Omit<Restroom, 'id' | 'created_at' | 'is_free'>>
+            },
+            bookmarks: {
+                Row: {
+                    id: string
+                    created_at: string
+                    user_id: string
+                    restroom_id: string
+                }
+                Insert: {
+                    id?: string
+                    created_at?: string
+                    user_id: string
+                    restroom_id: string
+                }
+                Update: {
+                    id?: string
+                    created_at?: string
+                    user_id?: string
+                    restroom_id?: string
+                }
             }
         }
     }

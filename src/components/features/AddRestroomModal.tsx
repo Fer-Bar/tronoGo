@@ -86,6 +86,7 @@ export function AddRestroomModal({ isOpen, onClose, onSuccess }: AddRestroomModa
     if (!isOpen) {
       resetForm()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen])
 
   // Generate suggested name based on type and street

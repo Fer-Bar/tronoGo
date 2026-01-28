@@ -1,4 +1,5 @@
-import { IconX, IconNavigation, IconMapPin, IconStar, IconStarFilled, IconBookmark, IconShare, IconClock } from '@tabler/icons-react'
+import { IconX, IconMapPin, IconStar, IconStarFilled, IconClock } from '@tabler/icons-react'
+import { RestroomActions } from './RestroomActions'
 import { BottomSheet } from '../ui/BottomSheet'
 import { TYPE_LABELS, AMENITY_LABELS, TYPE_ICONS, AMENITY_ICONS } from '../../lib/constants'
 import { formatShortAddress, formatDistance, calculateDistance } from '../../lib/utils'
@@ -25,10 +26,7 @@ function SummaryView({ restroom }: { restroom: Restroom }) {
     ? new Date(`1970-01-01T${restroom.closing_time}`).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
     : null
     
-  const openGoogleMaps = () => {
-    const url = `https://www.google.com/maps/dir/?api=1&destination=${restroom.latitude},${restroom.longitude}&travelmode=walking`
-    window.open(url, "_blank")
-  }
+
   
   return (
     <div className="pt-10 px-5 pb-5 h-full flex flex-col justify-between">
@@ -67,20 +65,8 @@ function SummaryView({ restroom }: { restroom: Restroom }) {
       </div>
 
       {/* Action Footer (Matches Sticky Footer) */}
-      <div className="flex items-center gap-3 mt-4">
-          <button 
-            onClick={openGoogleMaps}
-            className="flex-1 h-12 bg-primary-500 hover:bg-primary-400 text-gray-900 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-primary-500/20 hover:shadow-primary-500/30"
-          >
-            <IconNavigation className="size-5" />
-            <span className="text-sm">Ir Ahora</span>
-          </button>
-          <button className="h-12 w-12 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10 hover:text-white transition-colors">
-            <IconBookmark className="size-5" />
-          </button>
-          <button className="h-12 w-12 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10 hover:text-white transition-colors">
-            <IconShare className="size-5" />
-          </button>
+      <div className="mt-4">
+         <RestroomActions restroom={restroom} />
       </div>
     </div>
   )
@@ -99,10 +85,7 @@ function ExpandedView({ restroom, onClose }: { restroom: Restroom; onClose: () =
     ? new Date(`1970-01-01T${restroom.closing_time}`).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
     : null
 
-  const openGoogleMaps = () => {
-    const url = `https://www.google.com/maps/dir/?api=1&destination=${restroom.latitude},${restroom.longitude}&travelmode=walking`
-    window.open(url, "_blank")
-  }
+
 
   return (
     <div className="flex flex-col h-full bg-gray-900">
@@ -257,21 +240,7 @@ function ExpandedView({ restroom, onClose }: { restroom: Restroom; onClose: () =
 
       {/* Sticky Footer */}
       <div className="absolute bottom-0 left-0 right-0 bg-gray-950/95 backdrop-blur-md border-t border-white/5 p-4 z-20">
-        <div className="flex items-center gap-3">
-          <button 
-            onClick={openGoogleMaps}
-            className="flex-1 h-12 bg-primary-500 hover:bg-primary-400 text-gray-900 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-primary-500/20 hover:shadow-primary-500/30"
-          >
-            <IconNavigation className="size-5" />
-            <span className="text-sm">Ir Ahora</span>
-          </button>
-          <button className="h-12 w-12 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10 hover:text-white transition-colors">
-            <IconBookmark className="size-5" />
-          </button>
-          <button className="h-12 w-12 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10 hover:text-white transition-colors">
-            <IconShare className="size-5" />
-          </button>
-        </div>
+        <RestroomActions restroom={restroom} />
       </div>
     </div>
   )
