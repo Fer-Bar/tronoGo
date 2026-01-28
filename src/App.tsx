@@ -164,6 +164,11 @@ function App() {
     mapRef.current?.flyTo(userLocation.longitude, userLocation.latitude, 16)
   }, [userLocation])
 
+  // Fly to a specific restroom with smooth animation (used by ExploreScreen list)
+  const handleFlyToRestroom = useCallback((longitude: number, latitude: number) => {
+    mapRef.current?.flyTo(longitude, latitude, 16)
+  }, [])
+
 
   return (
     <div className="h-dvh w-screen overflow-hidden relative bg-gray-900">
@@ -182,7 +187,11 @@ function App() {
       <div className="absolute inset-0 z-10 pointer-events-none">
           {currentScreen === 'explore' && (
             <div className="w-full h-full">
-               <ExploreScreen onAddClick={handleAddClick} onFlyToUser={handleFlyToUser} />
+               <ExploreScreen 
+                 onAddClick={handleAddClick} 
+                 onFlyToUser={handleFlyToUser}
+                 onFlyToRestroom={handleFlyToRestroom}
+               />
             </div>
           )}
 

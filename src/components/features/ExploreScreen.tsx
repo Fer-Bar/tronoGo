@@ -5,16 +5,19 @@ import { RestroomDetail } from './RestroomDetail'
 import { NearbyList } from './NearbyList'
 import { ProfileButton } from '../auth/ProfileButton'
 import { useAppStore } from '../../lib/store'
+import { useAuthStore } from '../../lib/authStore'
 import { filterAndSortRestrooms } from '../../lib/utils'
 
 interface ExploreScreenProps {
   onAddClick: () => void
   onFlyToUser?: () => void
+  onFlyToRestroom?: (longitude: number, latitude: number) => void
 }
 
-export function ExploreScreen({ onAddClick, onFlyToUser }: ExploreScreenProps) {
+export function ExploreScreen({ onAddClick, onFlyToUser, onFlyToRestroom }: ExploreScreenProps) {
   const { restrooms, selectedRestroom, setSelectedRestroom, setMapViewState, userLocation, filters, setFilters } =
     useAppStore()
+  const user = useAuthStore(state => state.user)
   
   // View mode is still local UI state for switching list/map overlay buttons
   const [viewMode, setViewMode] = useState<'map' | 'list'>('map')
@@ -24,16 +27,20 @@ export function ExploreScreen({ onAddClick, onFlyToUser }: ExploreScreenProps) {
       const restroom = restrooms.find((r) => r.id === id)
       if (restroom) {
         setSelectedRestroom(restroom)
-        // Center map on selected restroom (Store updates the map view state, persistent map reacts)
-        setMapViewState({
-          longitude: restroom.longitude,
-          latitude: restroom.latitude,
-          zoom: 16, 
-        })
+        // Use flyTo for smooth animation if available, otherwise fall back to state update
+        if (onFlyToRestroom) {
+          onFlyToRestroom(restroom.longitude, restroom.latitude)
+        } else {
+          setMapViewState({
+            longitude: restroom.longitude,
+            latitude: restroom.latitude,
+            zoom: 16, 
+          })
+        }
       }
       setViewMode('map') 
     },
-    [restrooms, setSelectedRestroom, setMapViewState]
+    [restrooms, setSelectedRestroom, setMapViewState, onFlyToRestroom]
   )
 
   const handleCloseDetails = useCallback(() => {
@@ -84,7 +91,14 @@ export function ExploreScreen({ onAddClick, onFlyToUser }: ExploreScreenProps) {
       {/* Map Mode Toggle Button */}
       <div className="absolute top-[4.5rem] right-3 z-30 pointer-events-auto">
             <button
-            onClick={() => setViewMode(prev => prev === 'map' ? 'list' : 'map')}
+            onClick={() => {
+              if (viewMode === 'map') {
+                setSelectedRestroom(null)
+                setViewMode('list')
+              } else {
+                setViewMode('map')
+              }
+            }}
             className="flex items-center gap-2 px-4 py-2 bg-white/95 dark:bg-gray-900/95 backdrop-blur border border-gray-200 dark:border-gray-800 rounded-full shadow-lg text-sm font-semibold text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-all active:scale-95"
           >
              {viewMode === 'map' ? (
@@ -109,26 +123,26 @@ export function ExploreScreen({ onAddClick, onFlyToUser }: ExploreScreenProps) {
           >
             <IconCurrentLocation size={22} />
           </button>
-          <button
-            onClick={onAddClick}
-            className="flex size-14 items-center justify-center rounded-full bg-primary-600 hover:bg-primary-700 text-white shadow-xl shadow-primary-600/30 transition-transform hover:scale-105 active:scale-95"
-            aria-label="Add restroom"
-          >
-            <IconPlus size={32} />
-          </button>
+          {user && (
+            <button
+              onClick={onAddClick}
+              className="flex size-14 items-center justify-center rounded-full bg-primary-600 hover:bg-primary-700 text-white shadow-xl shadow-primary-600/30 transition-transform hover:scale-105 active:scale-95"
+              aria-label="Add restroom"
+            >
+              <IconPlus size={32} />
+            </button>
+          )}
         </div>
       )}
 
       {/* Nearby List Overlay - Shows when viewMode is list */}
       {viewMode === 'list' && (
-        <div className="pointer-events-auto h-full"> {/* Ensure pointer events work, h-full to match context if needed, or just let NearbyList handle pos */}
-             <NearbyList 
-                restrooms={filteredRestrooms}
-                userLocation={userLocation}
-                onRestroomSelect={(r) => handleMarkerClick(r.id)}
-                onClose={() => setViewMode('map')}
-            />
-        </div>
+        <NearbyList 
+            restrooms={filteredRestrooms}
+            userLocation={userLocation}
+            onRestroomSelect={(r) => handleMarkerClick(r.id)}
+            onClose={() => setViewMode('map')}
+        />
       )}
 
       {/* Restroom details bottom sheet */}

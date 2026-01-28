@@ -70,10 +70,11 @@ export function BottomSheet({
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
-            animate={{ opacity: isExpanded ? 0.6 : 0.2 }}
+            animate={{ opacity: isExpanded ? 0.6 : 0 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.25 }}
             className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+            style={{ pointerEvents: isExpanded ? 'auto' : 'none' }}
             onClick={handleClose}
           />
 
@@ -110,10 +111,13 @@ export function BottomSheet({
             </div>
 
             {/* Content */}
-            <div className={cn(
-              'flex-1 overflow-hidden flex flex-col',
-              isExpanded ? '' : ''
-            )}>
+            <div 
+              className={cn(
+                'flex-1 overflow-hidden flex flex-col',
+                !isExpanded && 'cursor-pointer' // Add pointer cursor to indicate clickability
+              )}
+              onClick={() => !isExpanded && setSheetState('expanded')}
+            >
               {isExpanded && expandedContent ? expandedContent : children}
             </div>
           </motion.div>

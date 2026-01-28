@@ -1,6 +1,6 @@
-import { IconX, IconNavigation, IconMapPin, IconStar, IconWheelchair, IconBabyCarriage, IconGenderBigender, IconBuildingStore, IconToolsKitchen2, IconLock, IconStarFilled, IconBookmark, IconShare, IconClock } from '@tabler/icons-react'
+import { IconX, IconNavigation, IconMapPin, IconStar, IconStarFilled, IconBookmark, IconShare, IconClock } from '@tabler/icons-react'
 import { BottomSheet } from '../ui/BottomSheet'
-import { TYPE_LABELS, AMENITY_LABELS } from '../../lib/constants'
+import { TYPE_LABELS, AMENITY_LABELS, TYPE_ICONS, AMENITY_ICONS } from '../../lib/constants'
 import { formatShortAddress, formatDistance, calculateDistance } from '../../lib/utils'
 import type { Restroom } from '../../lib/database.types'
 import { useAppStore } from '../../lib/store'
@@ -11,14 +11,7 @@ interface RestroomDetailProps {
   onClose: () => void
 }
 
-const AMENITY_ICONS: Record<string, React.ElementType> = {
-  accessible: IconWheelchair,
-  unisex: IconGenderBigender,
-  baby_changing: IconBabyCarriage,
-  paper: IconBuildingStore,
-  soap: IconToolsKitchen2,
-  private: IconLock,
-}
+
 
 // Collapsed Summary View
 function SummaryView({ restroom }: { restroom: Restroom }) {
@@ -133,7 +126,7 @@ function ExpandedView({ restroom, onClose }: { restroom: Restroom; onClose: () =
             <IconMapPin className="size-16 text-primary-500/30" />
           </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent opacity-90" />
+        <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/50 to-transparent" />
         
         {/* Status Badge on Image */}
         <div className="absolute top-4 left-4 flex gap-2">
@@ -149,7 +142,13 @@ function ExpandedView({ restroom, onClose }: { restroom: Restroom; onClose: () =
       </div>
 
       {/* Scrollable Content */}
-      <div className="flex-1 overflow-y-auto px-5 pt-2 pb-28 space-y-6 -mt-4 relative z-10">
+      <div 
+        className="flex-1 overflow-y-auto px-5 pt-6 pb-28 space-y-6 -mt-4 relative z-10"
+        style={{ 
+          maskImage: 'linear-gradient(to bottom, transparent, black 20px)',
+          WebkitMaskImage: 'linear-gradient(to bottom, transparent, black 20px)'
+        }}
+      >
         {/* Title Section */}
         <div className="space-y-2">
           <div className="flex items-start justify-between">
@@ -173,7 +172,15 @@ function ExpandedView({ restroom, onClose }: { restroom: Restroom; onClose: () =
            </div>
 
           {/* Expanded Info Row */}
-          <div className="flex flex-wrap items-center gap-3 text-sm font-medium text-gray-300 mt-2 p-3 bg-gray-800/40 rounded-xl border border-white/5">
+          <div className="flex flex-wrap items-center gap-y-2 gap-x-3 text-sm font-medium text-gray-300 mt-2 p-3 bg-gray-800/40 rounded-xl border border-white/5">
+             <span className="flex items-center gap-1">
+               {(() => {
+                 const Icon = TYPE_ICONS[restroom.type] || TYPE_ICONS.public
+                 return <Icon className="size-4 text-primary-400" />
+               })()}
+              <span>{TYPE_LABELS[restroom.type]?.label || restroom.type}</span>
+            </span>
+            <span className="size-1 rounded-full bg-gray-600" />
              <span className="flex items-center gap-1">
                 <IconMapPin className="size-4 text-primary-400" />
                 <span>{distance || '-'}</span>
@@ -189,13 +196,6 @@ function ExpandedView({ restroom, onClose }: { restroom: Restroom; onClose: () =
             <span className="size-1 rounded-full bg-gray-600" />
              <span className="text-gray-200">
                 {restroom.is_free ? 'Gratis' : `${restroom.price} Bs`}
-            </span>
-          </div>
-
-          {/* Tags */}
-          <div className="flex flex-wrap gap-2 mt-2">
-             <span className="text-xs font-medium px-3 py-1.5 rounded-full bg-gray-800/50 border border-white/5 text-gray-300">
-              {TYPE_LABELS[restroom.type]?.label || restroom.type}
             </span>
           </div>
         </div>

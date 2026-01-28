@@ -45,4 +45,38 @@ export const AMENITY_LABELS: Record<string, string> = {
     paper: 'Papel',
     soap: 'Jabón',
     private: 'Privado',
+    sink: 'Lavamanos',
+}
+
+// Icons for consistency across app
+import {
+    IconBuilding,
+    IconBuildingStore,
+    IconToolsKitchen2,
+    IconGasStation,
+    IconWheelchair,
+    IconBabyCarriage,
+    IconToiletPaper,
+    IconDroplet,
+    IconWash,
+    IconGenderBigender,
+    IconGenderAgender
+} from '@tabler/icons-react'
+
+export const TYPE_ICONS: Record<string, any> = {
+    public: IconBuilding,
+    commerce: IconBuildingStore,
+    restaurant: IconToolsKitchen2,
+    gas_station: IconGasStation,
+    other: IconBuilding,
+}
+
+export const AMENITY_ICONS: Record<string, any> = {
+    accessible: IconWheelchair,
+    baby_changing: IconBabyCarriage,
+    paper: IconToiletPaper,
+    soap: IconDroplet,
+    sink: IconWash,
+    private: IconGenderBigender,
+    unisex: IconGenderAgender,
 }

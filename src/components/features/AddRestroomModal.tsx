@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
-import { IconX, IconLocation, IconBuildingStore, IconToolsKitchen2, IconGasStation, IconWheelchair, IconGenderBigender, IconBabyCarriage, IconCamera, IconGenderMale, IconGenderFemale, IconToiletPaper, IconDroplet, IconWash } from '@tabler/icons-react'
+import { IconX, IconPhotoPlus, IconGenderMale, IconGenderFemale, IconGenderBigender, IconTrash } from '@tabler/icons-react'
 import { Button } from '../ui'
 import { cn } from '../../lib/utils'
 import { supabase } from '../../lib/supabase'
 import { useAppStore } from '../../lib/store'
 import type { RestroomType, Amenity } from '../../lib/database.types'
+import { uploadImageToR2 } from '../../utils/upload'
+import { TYPE_ICONS, AMENITY_ICONS } from '../../lib/constants'
 
 interface AddRestroomModalProps {
   isOpen: boolean
@@ -15,19 +17,19 @@ interface AddRestroomModalProps {
 }
 
 const RESTROOM_TYPES: { id: RestroomType; label: string; sublabel: string; icon: React.ReactNode }[] = [
-  { id: 'public', label: 'Público', sublabel: 'Gratis', icon: <IconLocation size={22} /> },
-  { id: 'commerce', label: 'Comercio', sublabel: 'Pago', icon: <IconBuildingStore size={22} /> },
-  { id: 'restaurant', label: 'Comida', sublabel: 'Cafés, etc', icon: <IconToolsKitchen2 size={22} /> },
-  { id: 'gas_station', label: 'Gasolinera', sublabel: '', icon: <IconGasStation size={22} /> },
+  { id: 'public', label: 'Público', sublabel: 'Gratis', icon: <TYPE_ICONS.public size={22} /> },
+  { id: 'commerce', label: 'Comercio', sublabel: 'Pago', icon: <TYPE_ICONS.commerce size={22} /> },
+  { id: 'restaurant', label: 'Comida', sublabel: 'Cafés, etc', icon: <TYPE_ICONS.restaurant size={22} /> },
+  { id: 'gas_station', label: 'Gasolinera', sublabel: '', icon: <TYPE_ICONS.gas_station size={22} /> },
 ]
 
 const AMENITIES: { id: Amenity; label: string; icon: React.ReactNode }[] = [
-  { id: 'accessible', label: 'Accesible', icon: <IconWheelchair size={18} /> },
-  { id: 'baby_changing', label: 'Cambiador', icon: <IconBabyCarriage size={18} /> },
-  { id: 'paper', label: 'Papel', icon: <IconToiletPaper size={18} /> },
-  { id: 'soap', label: 'Jabón', icon: <IconDroplet size={18} /> },
-  { id: 'sink', label: 'Lavamanos', icon: <IconWash size={18} /> },
-  { id: 'private', label: 'Privado', icon: <IconGenderBigender size={18} /> },
+  { id: 'accessible', label: 'Accesible', icon: <AMENITY_ICONS.accessible size={18} /> },
+  { id: 'baby_changing', label: 'Cambiador', icon: <AMENITY_ICONS.baby_changing size={18} /> },
+  { id: 'paper', label: 'Papel', icon: <AMENITY_ICONS.paper size={18} /> },
+  { id: 'soap', label: 'Jabón', icon: <AMENITY_ICONS.soap size={18} /> },
+  { id: 'sink', label: 'Lavamanos', icon: <AMENITY_ICONS.sink size={18} /> },
+  { id: 'private', label: 'Privado', icon: <AMENITY_ICONS.private size={18} /> },
 ]
 
 export function AddRestroomModal({ isOpen, onClose, onSuccess }: AddRestroomModalProps) {
@@ -43,7 +45,9 @@ export function AddRestroomModal({ isOpen, onClose, onSuccess }: AddRestroomModa
   const [openTime, setOpenTime] = useState('')
   const [closeTime, setCloseTime] = useState('')
   const [description, setDescription] = useState('')
-  const [photos] = useState<string[]>([])
+  // Store File objects locally, only upload on successful submit
+  const [photoFiles, setPhotoFiles] = useState<File[]>([])
+  const [photoPreviews, setPhotoPreviews] = useState<string[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Lock body scroll when modal is open (prevents iOS touch-through bug)
@@ -72,6 +76,10 @@ export function AddRestroomModal({ isOpen, onClose, onSuccess }: AddRestroomModa
     setOpenTime('')
     setCloseTime('')
     setDescription('')
+    // Clean up object URLs to prevent memory leaks
+    photoPreviews.forEach(url => URL.revokeObjectURL(url))
+    setPhotoFiles([])
+    setPhotoPreviews([])
   }
 
   useEffect(() => {
@@ -114,6 +122,22 @@ export function AddRestroomModal({ isOpen, onClose, onSuccess }: AddRestroomModa
     setIsSubmitting(true)
 
     try {
+      // Upload photos to R2 only now (at submit time)
+      let uploadedPhotoUrls: string[] = []
+      if (photoFiles.length > 0) {
+        toast.loading('Subiendo fotos...', { id: 'photo-upload' })
+        try {
+          const uploadPromises = photoFiles.map(file => uploadImageToR2(file))
+          uploadedPhotoUrls = await Promise.all(uploadPromises)
+          toast.success(`${uploadedPhotoUrls.length} foto(s) subida(s)`, { id: 'photo-upload' })
+        } catch (uploadError) {
+          console.error('Error uploading photos:', uploadError)
+          toast.error('Error al subir las fotos. Intenta de nuevo.', { id: 'photo-upload' })
+          setIsSubmitting(false)
+          return
+        }
+      }
+
       const allAmenities = [...genderAmenities, ...features]
       const numericPrice = isFree ? 0 : parseFloat(price) || 0
 
@@ -137,7 +161,7 @@ export function AddRestroomModal({ isOpen, onClose, onSuccess }: AddRestroomModa
         opening_time: openTime || null,
         closing_time: closeTime || null,
         description: description || null,
-        photos: photos.length > 0 ? photos : [],
+        photos: uploadedPhotoUrls,
       }
 
       const { data, error } = await supabase
@@ -146,7 +170,6 @@ export function AddRestroomModal({ isOpen, onClose, onSuccess }: AddRestroomModa
         .insert(newRestroom as any)
         .select()
         .single()
-
 
       if (error) {
         console.error('Error creating restroom:', error)
@@ -165,6 +188,24 @@ export function AddRestroomModal({ isOpen, onClose, onSuccess }: AddRestroomModa
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  // Handle adding a photo file locally
+  const handleAddPhoto = (file: File) => {
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('La imagen no puede pesar más de 5MB')
+      return
+    }
+    const previewUrl = URL.createObjectURL(file)
+    setPhotoFiles(prev => [...prev, file])
+    setPhotoPreviews(prev => [...prev, previewUrl])
+  }
+
+  // Handle removing a photo
+  const handleRemovePhoto = (index: number) => {
+    URL.revokeObjectURL(photoPreviews[index])
+    setPhotoFiles(prev => prev.filter((_, i) => i !== index))
+    setPhotoPreviews(prev => prev.filter((_, i) => i !== index))
   }
 
   return (
@@ -421,20 +462,64 @@ export function AddRestroomModal({ isOpen, onClose, onSuccess }: AddRestroomModa
                  />
                </div>
 
-              {/* Photos placeholder */}
-              <button 
-                 type="button" // Prevent submit trigger
-                 className="w-full flex items-center gap-3 p-3 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl mb-6 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                 onClick={() => alert("La subida de fotos estará disponible pronto.")}
-              >
-                <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
-                  <IconCamera size={20} className="text-gray-500 dark:text-gray-300" />
-                </div>
-                <div className="text-left">
-                  <div className="font-bold text-gray-900 dark:text-white">Añadir fotos</div>
-                  <div className="text-xs text-gray-500">Opcional pero recomendado</div>
-                </div>
-              </button>
+              {/* Photos Upload Section */}
+               <div className="mb-6">
+                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">
+                   Fotos <span className="text-gray-400 font-normal ml-1">({photoFiles.length}/3)</span>
+                 </label>
+                 
+                 {/* Photo Previews - Local files, not uploaded yet */}
+                 {photoPreviews.length > 0 && (
+                   <div className="grid grid-cols-3 gap-3 mb-3">
+                     {photoPreviews.map((preview, index) => (
+                       <div key={index} className="relative aspect-square rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 group">
+                         <img src={preview} alt={`Foto ${index + 1}`} className="w-full h-full object-cover" />
+                         <button
+                           type="button"
+                           onClick={() => handleRemovePhoto(index)}
+                           className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                         >
+                           <IconTrash size={14} />
+                         </button>
+                       </div>
+                     ))}
+                   </div>
+                 )}
+
+                 {/* Add Photo Button - saves locally, no network request */}
+                 {photoFiles.length < 3 && (
+                   <div className="relative">
+                     <input
+                       type="file"
+                       accept="image/*"
+                       onChange={(e) => {
+                         const file = e.target.files?.[0]
+                         if (file) {
+                           handleAddPhoto(file)
+                         }
+                         e.target.value = '' // Reset input
+                       }}
+                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                     />
+                     <div className="flex items-center justify-center gap-3 p-4 border-2 border-dashed rounded-xl transition-all border-gray-300 dark:border-gray-700 hover:border-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/10">
+                       <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg text-gray-500 dark:text-gray-300">
+                         <IconPhotoPlus size={20} />
+                       </div>
+                       <div className="text-left">
+                         <div className="text-sm font-bold text-gray-700 dark:text-gray-200">
+                           Añadir foto
+                         </div>
+                         <div className="text-xs text-gray-500">
+                           Máx 5MB (JPG, PNG)
+                         </div>
+                       </div>
+                     </div>
+                   </div>
+                 )}
+                 {photoFiles.length > 0 && (
+                   <p className="text-xs text-gray-400 mt-2">Las fotos se subiran al guardar</p>
+                 )}
+               </div>
 
             </div>
 

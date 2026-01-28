@@ -23,9 +23,10 @@ describe('cn (classnames utility)', () => {
 })
 
 describe('formatDistance', () => {
-    it('formats meters under 1000 as meters', () => {
+    it('formats meters under 1000 as meters with rounding', () => {
         expect(formatDistance(500)).toBe('500m')
-        expect(formatDistance(999)).toBe('999m')
+        // 999 rounds to 1000m due to 50m rounding step
+        expect(formatDistance(999)).toBe('1000m')
     })
 
     it('formats 1000+ meters as kilometers', () => {
@@ -34,8 +35,11 @@ describe('formatDistance', () => {
         expect(formatDistance(2345)).toBe('2.3km')
     })
 
-    it('rounds meters to whole numbers', () => {
-        expect(formatDistance(123.7)).toBe('124m')
+    it('rounds medium distances to nearest 50m', () => {
+        // 123.7 -> nearest 50 is 100 (margin 23.7 vs 26.3)
+        expect(formatDistance(123.7)).toBe('100m')
+        // 126 -> nearest 50 is 150
+        expect(formatDistance(126)).toBe('150m')
     })
 })
 

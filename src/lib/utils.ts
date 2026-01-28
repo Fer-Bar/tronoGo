@@ -6,11 +6,26 @@ export function cn(...inputs: ClassValue[]) {
     return clsx(inputs)
 }
 
+/**  
+ * Formats distance for display with stable rounding to avoid UI jitter.
+ * - Under 100m: rounds to nearest 10m
+ * - 100m-1km: rounds to nearest 50m
+ * - Over 1km: shows 1 decimal place km
+ */
 export function formatDistance(meters: number): string {
-    if (meters < 1000) {
-        return `${Math.round(meters)}m`
+    if (meters < 100) {
+        // Round to nearest 10m for short distances
+        const rounded = Math.round(meters / 10) * 10
+        return `${Math.max(10, rounded)}m`
     }
-    return `${(meters / 1000).toFixed(1)}km`
+    if (meters < 1000) {
+        // Round to nearest 50m for medium distances
+        const rounded = Math.round(meters / 50) * 50
+        return `${rounded}m`
+    }
+    // For km, use 1 decimal place with proper rounding
+    const km = Math.round(meters / 100) / 10
+    return `${km.toFixed(1)}km`
 }
 
 export function formatPrice(price: number): string {
