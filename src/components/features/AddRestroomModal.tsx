@@ -46,6 +46,21 @@ export function AddRestroomModal({ isOpen, onClose, onSuccess }: AddRestroomModa
   const [photos] = useState<string[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
 
+  // Lock body scroll when modal is open (prevents iOS touch-through bug)
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+      document.body.style.touchAction = 'none'
+    } else {
+      document.body.style.overflow = ''
+      document.body.style.touchAction = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+      document.body.style.touchAction = ''
+    }
+  }, [isOpen])
+
   // Reset form when modal closes
   const resetForm = () => {
     setName('')
@@ -156,13 +171,15 @@ export function AddRestroomModal({ isOpen, onClose, onSuccess }: AddRestroomModa
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop */}
+          {/* Backdrop - blocks all touch events */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
+            style={{ touchAction: 'none' }}
             onClick={onClose}
+            onTouchMove={(e) => e.preventDefault()}
           />
 
           {/* Modal Wrapper for Centering */}
@@ -189,7 +206,7 @@ export function AddRestroomModal({ isOpen, onClose, onSuccess }: AddRestroomModa
             </div>
 
             {/* Scrollable Content */}
-            <div className="flex-1 overflow-y-auto px-6 py-4">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden px-6 py-4">
               
               {/* Type Grid - FIRST */}
               <div className="mb-6">
