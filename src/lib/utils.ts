@@ -106,3 +106,90 @@ export function filterAndSortRestrooms(
         return 0
     })
 }
+
+// --- Address Parsing Utilities ---
+
+/**
+ * Represents a parsed address with individual components.
+ * Useful for displaying different levels of detail in various UI contexts.
+ */
+export interface ParsedAddress {
+    street: string | null      // e.g., "123 Main St"
+    city: string | null        // e.g., "Santa Cruz"
+    state: string | null       // e.g., "SCZ" or "California"
+    country: string | null     // e.g., "Bolivia"
+    postalCode: string | null  // e.g., "10001"
+    full: string               // The original full address string
+}
+
+/**
+ * Parses a full address string into its components.
+ * Assumes a common format like: "Street, City, State, Country" or similar.
+ * This is a heuristic parser and may not work for all address formats.
+ * 
+ * @param fullAddress The full address string (e.g., from geocoding API)
+ * @returns A ParsedAddress object with extracted components
+ */
+export function parseAddress(fullAddress: string | null | undefined): ParsedAddress {
+    const defaultResult: ParsedAddress = {
+        street: null,
+        city: null,
+        state: null,
+        country: null,
+        postalCode: null,
+        full: fullAddress || '',
+    }
+
+    if (!fullAddress) return defaultResult
+
+    // Split by comma and trim whitespace
+    const parts = fullAddress.split(',').map(p => p.trim()).filter(Boolean)
+
+    if (parts.length === 0) return defaultResult
+
+    // Common patterns:
+    // 1 part:  "City" or "Street"
+    // 2 parts: "Street, City"
+    // 3 parts: "Street, City, Country" or "Street, City, State"
+    // 4+ parts: "Street, City, State, Country" (and possibly more)
+
+    if (parts.length >= 1) {
+        defaultResult.street = parts[0]
+    }
+    if (parts.length >= 2) {
+        defaultResult.city = parts[1]
+    }
+    if (parts.length >= 3) {
+        defaultResult.state = parts[2]
+    }
+    if (parts.length >= 4) {
+        defaultResult.country = parts[3]
+    }
+    // Postal code often embedded with city or state, not extracted here.
+
+    return defaultResult
+}
+
+/**
+ * Formats an address for short display (typically "Street, City").
+ * Falls back to the full address if parsing yields insufficient parts.
+ * 
+ * @param fullAddress The full address string
+ * @param fallback Text to show if address is empty
+ * @returns A short formatted address string
+ */
+export function formatShortAddress(fullAddress: string | null | undefined, fallback = 'Sin dirección'): string {
+    const parsed = parseAddress(fullAddress)
+
+    if (parsed.street && parsed.city) {
+        return `${parsed.street}, ${parsed.city}`
+    }
+    if (parsed.street) {
+        return parsed.street
+    }
+    if (parsed.full) {
+        return parsed.full
+    }
+    return fallback
+}
+

@@ -107,12 +107,11 @@ function App() {
       )
       const data = await response.json()
       
-      if (data.features && data.features.length > 0) {
-        // Extract street only (first part before comma)
-        const fullAddress = data.features[0].place_name as string
-        const streetOnly = fullAddress.split(',')[0].trim()
-        setPickerAddress(streetOnly)
-      } else {
+        if (data.features && data.features.length > 0) {
+          // Use full address (the util function will handle formatting/shortening)
+          const fullAddress = data.features[0].place_name as string
+          setPickerAddress(fullAddress)
+        } else {
         setPickerAddress('Ubicación seleccionada')
       }
     } catch {

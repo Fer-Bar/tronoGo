@@ -2,6 +2,7 @@ import { IconArrowLeft, IconMapPin } from '@tabler/icons-react'
 import { motion } from 'framer-motion'
 import { Button } from '../ui'
 import { useAppStore } from '../../lib/store'
+import { formatShortAddress } from '../../lib/utils'
 
 interface PinPickerScreenProps {
   onConfirm: () => void
@@ -69,7 +70,7 @@ export function PinPickerScreen({ onConfirm, onBack, address }: PinPickerScreenP
       <div className="absolute top-4 left-20 right-4 md:left-1/2 md:-translate-x-1/2 md:right-auto md:w-auto z-20 pointer-events-none">
         <div className="h-12 flex items-center gap-2 bg-white dark:bg-gray-800 rounded-full px-5 shadow-lg w-full md:w-auto md:min-w-[300px] border border-gray-100 dark:border-gray-700 pointer-events-auto box-border">
           <IconMapPin size={20} className="text-primary-600 dark:text-primary-400 shrink-0" />
-          <span className="text-sm font-bold text-gray-700 dark:text-gray-200 truncate">{address}</span>
+          <span className="text-sm font-bold text-gray-700 dark:text-gray-200 truncate">{formatShortAddress(address)}</span>
         </div>
       </div>
 
