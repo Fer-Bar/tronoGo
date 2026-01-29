@@ -115,29 +115,29 @@ export function RestroomActions({ restroom, onWriteReview }: RestroomActionsProp
     <div className="flex items-center gap-3 w-full">
       <button 
         onClick={openGoogleMaps}
-        className="flex-1 h-12 bg-primary-500 hover:bg-primary-400 text-gray-900 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-primary-500/20 hover:shadow-primary-500/30 cursor-pointer"
+        className="flex-1 h-12 md:h-10 bg-primary-500 hover:bg-primary-400 text-gray-900 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-primary-500/20 hover:shadow-primary-500/30 cursor-pointer"
       >
-        <IconNavigation className="size-5" />
-        <span className="text-sm">Ir Ahora</span>
+        <IconNavigation className="size-5 md:size-4" />
+        <span className="text-sm md:text-xs">Ir Ahora</span>
       </button>
       
       <button 
         onClick={handleBookmark}
         disabled={loading}
-        className={`h-12 w-12 flex items-center justify-center rounded-xl border transition-colors cursor-pointer disabled:opacity-50 ${
+        className={`h-12 md:h-10 w-12 md:w-10 flex items-center justify-center rounded-xl border transition-colors cursor-pointer disabled:opacity-50 ${
             isBookmarked 
                 ? 'bg-primary-500/20 border-primary-500/50 text-primary-400' 
                 : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10 hover:text-white'
         }`}
       >
-        <IconBookmark className={`size-5 ${isBookmarked ? 'fill-current' : ''}`} />
+        <IconBookmark className={`size-5 md:size-4 ${isBookmarked ? 'fill-current' : ''}`} />
       </button>
       
       <button 
         onClick={handleReviewClick}
-        className="h-12 w-12 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10 hover:text-white transition-colors cursor-pointer"
+        className="h-12 md:h-10 w-12 md:w-10 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10 hover:text-white transition-colors cursor-pointer"
       >
-        <IconMessagePlus className="size-5" />
+        <IconMessagePlus className="size-5 md:size-4" />
       </button>
     </div>
   )

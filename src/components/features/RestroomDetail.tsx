@@ -1,4 +1,4 @@
-import { IconX, IconMapPin, IconStar, IconStarFilled, IconClock } from '@tabler/icons-react'
+import { IconX, IconMapPin, IconStar, IconStarFilled, IconClock, IconCash } from '@tabler/icons-react'
 import { RestroomActions } from './RestroomActions'
 import { RestroomComments } from './RestroomComments'
 import { BottomSheet } from '../ui/BottomSheet'
@@ -27,11 +27,11 @@ function SummaryView({ restroom, onWriteReview }: { restroom: Restroom; onWriteR
     : null
 
   return (
-    <div className="pt-10 px-5 pb-5 h-full flex flex-col justify-between">
+    <div className="pt-10 md:pt-6 px-5 md:px-6 pb-5 md:pb-4 h-full md:h-auto flex flex-col gap-4">
       {/* Header Info */}
       <div className="space-y-1">
         <div className="flex items-start justify-between gap-2">
-           <h3 className="font-bold text-2xl text-white truncate leading-tight">{restroom.name}</h3>
+           <h3 className="font-bold text-2xl md:text-xl text-white truncate leading-tight">{restroom.name}</h3>
            <div className="flex items-center gap-1 bg-primary-500/10 px-2 py-1 rounded-lg shrink-0">
               <span className="text-primary-400 font-bold text-sm">
                 {restroom.vote_count > 0 ? restroom.rating.toFixed(1) : '-'}
@@ -96,7 +96,7 @@ function ExpandedView({
     : null
 
   return (
-    <div className="flex flex-col h-full bg-gray-900">
+    <div className="flex flex-col md:flex-row h-full md:max-h-[85vh] xl:max-h-[85vh] md:h-auto bg-gray-900 relative">
       {/* Close Button */}
       <button 
         onClick={onClose}
@@ -106,7 +106,7 @@ function ExpandedView({
       </button>
 
       {/* Hero Image Section */}
-      <div className="w-full h-64 relative shrink-0 bg-gray-800">
+      <div className="w-full md:w-5/12 h-64 md:h-full relative shrink-0 bg-gray-800">
         {heroImage ? (
           <img 
             src={heroImage} 
@@ -137,7 +137,7 @@ function ExpandedView({
 
       {/* Scrollable Content */}
       <div 
-        className="flex-1 overflow-y-auto px-5 pt-6 pb-28 space-y-6 -mt-4 relative z-10"
+        className="flex-1 md:w-7/12 overflow-y-auto px-5 md:px-8 pt-6 md:pt-8 pb-28 md:pb-24 space-y-6 -mt-4 md:mt-0 relative z-10"
         style={{ 
           maskImage: 'linear-gradient(to bottom, transparent, black 20px)',
           WebkitMaskImage: 'linear-gradient(to bottom, transparent, black 20px)'
@@ -145,18 +145,18 @@ function ExpandedView({
       >
         {/* Title Section */}
         <div className="space-y-2">
-          <div className="flex items-start justify-between">
+          <div className="flex items-start justify-between pr-10 md:pr-12">
             <div>
-              <h1 className="text-3xl font-bold text-white tracking-tight leading-tight">{restroom.name}</h1>
+              <h1 className="text-3xl md:text-2xl font-bold text-white tracking-tight leading-tight">{restroom.name}</h1>
             </div>
-            <div className="flex flex-col items-center bg-gray-800/60 border border-primary-500/20 px-3 py-2 rounded-xl shrink-0 ml-2">
+            <div className="flex flex-col lg:flex-row items-center lg:gap-3 bg-gray-800/60 border border-primary-500/20 px-3 py-2 rounded-xl shrink-0 ml-2">
               <div className="flex items-center gap-1">
-                <span className="text-primary-400 font-bold text-xl">
+                <span className="text-primary-400 font-bold text-xl md:text-lg">
                   {restroom.vote_count > 0 ? restroom.rating.toFixed(1) : '-'}
                 </span>
                 <IconStarFilled className="size-4 text-primary-400" />
               </div>
-              <span className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">{restroom.vote_count} votos</span>
+              <span className="text-[10px] uppercase tracking-wider text-gray-400 font-bold whitespace-nowrap">{restroom.vote_count} votos</span>
             </div>
           </div>
           
@@ -166,7 +166,7 @@ function ExpandedView({
            </div>
 
           {/* Expanded Info Row */}
-          <div className="flex flex-wrap items-center gap-y-2 gap-x-3 text-sm font-medium text-gray-300 mt-2 p-3 bg-gray-800/40 rounded-xl border border-white/5">
+          <div className="flex flex-wrap items-center gap-y-2 gap-x-3 text-sm md:text-xs font-medium text-gray-300 mt-2 p-3 md:p-2 bg-gray-800/40 rounded-xl border border-white/5">
              <span className="flex items-center gap-1">
                {(() => {
                  const Icon = TYPE_ICONS[restroom.type] || TYPE_ICONS.public
@@ -188,8 +188,11 @@ function ExpandedView({
                  }
             </span>
             <span className="size-1 rounded-full bg-gray-600" />
-             <span className="text-gray-200">
-                {restroom.is_free ? 'Gratis' : `${restroom.price} Bs`}
+             <span className="flex items-center gap-1">
+                <IconCash className="size-4 text-primary-400" />
+                <span className="text-gray-200">
+                    {restroom.is_free ? 'Gratis' : `${restroom.price} Bs`}
+                </span>
             </span>
           </div>
         </div>
@@ -206,20 +209,20 @@ function ExpandedView({
 
         {/* Amenities Section */}
         {restroom.amenities && restroom.amenities.length > 0 && (
-          <div className="bg-gradient-to-br from-gray-800/60 to-gray-900 rounded-2xl p-5 border border-primary-500/10">
-            <h3 className="text-xs font-bold text-primary-400 mb-4 flex items-center gap-2 uppercase tracking-widest">
-              <IconStar className="size-4" /> Servicios Disponibles
+          <div className="bg-gray-800/40 rounded-xl p-4 md:p-3 border border-white/5">
+            <h3 className="text-xs font-bold text-primary-400 mb-3 md:mb-2 flex items-center gap-2 uppercase tracking-widest">
+              <IconStar className="size-4 md:size-3.5" /> Servicios Disponibles
             </h3>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3 md:gap-2">
               {restroom.amenities.map((amenity) => {
                 const Icon = AMENITY_ICONS[amenity] || IconStar
                 return (
                   <div
                     key={amenity}
-                    className="flex items-center gap-2.5 text-sm"
+                    className="flex items-center gap-2.5 md:gap-2 text-sm md:text-xs"
                   >
-                    <div className="p-2 rounded-lg bg-primary-500/10">
-                      <Icon className="size-4 text-primary-400" />
+                    <div className="p-2 md:p-1.5 rounded-lg bg-primary-500/10">
+                      <Icon className="size-4 md:size-3.5 text-primary-400" />
                     </div>
                     <span className="font-medium text-gray-200">
                       {AMENITY_LABELS[amenity] || amenity}
@@ -233,13 +236,8 @@ function ExpandedView({
 
         {/* Community Reviews Placeholder */}
         <div className="pt-4 border-t border-white/5">
-          <div className="flex items-center justify-between mb-4">
             <h3 className="text-base font-bold text-white">Opiniones</h3>
-            <div className="flex items-center gap-1 text-primary-400">
-              <span className="text-lg font-bold">{restroom.vote_count > 0 ? restroom.rating.toFixed(1) : '-'}</span>
-              <IconStarFilled className="size-4" />
-            </div>
-          </div>
+
           <div className="pt-2">
             <RestroomComments 
                 restroomId={restroom.id} 
@@ -260,6 +258,20 @@ function ExpandedView({
 
 export function RestroomDetail({ restroom, isOpen, onClose }: RestroomDetailProps) {
   const [isWritingReview, setIsWritingReview] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(false)
+
+  // Reset state when restroom changes or closes
+  if (!isOpen) { 
+      // We can't reset here easily because isOpen changes on close
+      // Instead we rely on the parent or useEffect if needed, 
+      // but for now let's just ensure we start fresh when mounting if keys changed
+  }
+  
+  // Auto-expand when writing review
+  const handleWriteReview = () => {
+      setIsWritingReview(true)
+      setIsExpanded(true)
+  }
 
   if (!restroom) return null
 
@@ -267,20 +279,22 @@ export function RestroomDetail({ restroom, isOpen, onClose }: RestroomDetailProp
     <BottomSheet 
       isOpen={isOpen} 
       onClose={onClose}
-      collapsedHeight={220} // Increased to accommodate the action actions row
+      collapsedHeight={220}
+      isExpanded={isExpanded}
+      onExpandedChange={setIsExpanded}
       expandedContent={
         <ExpandedView 
             restroom={restroom} 
             onClose={onClose} 
             isWritingReview={isWritingReview}
-            onWriteReview={() => setIsWritingReview(true)}
+            onWriteReview={handleWriteReview}
             onCloseReview={() => setIsWritingReview(false)}
         />
       }
     >
       <SummaryView 
         restroom={restroom} 
-        onWriteReview={() => setIsWritingReview(true)}
+        onWriteReview={handleWriteReview}
       />
     </BottomSheet>
   )

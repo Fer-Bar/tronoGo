@@ -12,6 +12,7 @@ interface AuthState {
     signInWithGoogle: () => Promise<void>
     signOut: () => Promise<void>
     initialize: () => () => void
+    refreshSession: () => Promise<void>
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -59,5 +60,10 @@ export const useAuthStore = create<AuthState>((set) => ({
         return () => {
             subscription.unsubscribe()
         }
+    },
+
+    refreshSession: async () => {
+        const { data: { session } } = await supabase.auth.refreshSession()
+        set({ session, user: session?.user ?? null })
     },
 }))

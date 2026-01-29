@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import type { PanInfo } from 'framer-motion'
 import { cn } from '../../lib/utils'
 
-type SheetState = 'collapsed' | 'expanded'
+
 
 interface BottomSheetProps {
   isOpen: boolean
@@ -12,6 +12,8 @@ interface BottomSheetProps {
   expandedContent?: React.ReactNode
   className?: string
   collapsedHeight?: number
+  isExpanded?: boolean
+  onExpandedChange?: (expanded: boolean) => void
 }
 
 const DEFAULT_COLLAPSED_HEIGHT = 160
@@ -25,43 +27,54 @@ export function BottomSheet({
   expandedContent,
   className,
   collapsedHeight = DEFAULT_COLLAPSED_HEIGHT,
+  isExpanded: controlledExpanded,
+  onExpandedChange,
 }: BottomSheetProps) {
-  const [sheetState, setSheetState] = useState<SheetState>('collapsed')
+  const [internalExpanded, setInternalExpanded] = useState(false)
+  const isControlled = controlledExpanded !== undefined
+  const isExpanded = isControlled ? controlledExpanded : internalExpanded
+
+  const setExpanded = useCallback((expanded: boolean) => {
+    if (onExpandedChange) {
+      onExpandedChange(expanded)
+    }
+    if (!isControlled) {
+      setInternalExpanded(expanded)
+    }
+  }, [isControlled, onExpandedChange])
 
   const handleDragEnd = useCallback((_: unknown, info: PanInfo) => {
     const { offset, velocity } = info
 
-    if (sheetState === 'collapsed') {
+    if (!isExpanded) {
       // Swiping up to expand
       if (offset.y < -DRAG_THRESHOLD || velocity.y < -500) {
-        setSheetState('expanded')
+        setExpanded(true)
       }
       // Swiping down to close
       else if (offset.y > DRAG_THRESHOLD || velocity.y > 500) {
         onClose()
-        setSheetState('collapsed')
+        setExpanded(false)
       }
     } else {
       // Swiping down to collapse or close
       if (offset.y > DRAG_THRESHOLD * 2 || velocity.y > 800) {
         onClose()
-        setSheetState('collapsed')
+        setExpanded(false)
       } else if (offset.y > DRAG_THRESHOLD || velocity.y > 400) {
-        setSheetState('collapsed')
+        setExpanded(false)
       }
     }
-  }, [sheetState, onClose])
+  }, [isExpanded, onClose, setExpanded])
 
   const handleClose = useCallback(() => {
     onClose()
-    setSheetState('collapsed')
-  }, [onClose])
+    setExpanded(false)
+  }, [onClose, setExpanded])
 
   const toggleExpand = useCallback(() => {
-    setSheetState(prev => prev === 'collapsed' ? 'expanded' : 'collapsed')
-  }, [])
-
-  const isExpanded = sheetState === 'expanded'
+    setExpanded(!isExpanded)
+  }, [isExpanded, setExpanded])
 
   return (
     <AnimatePresence>
@@ -99,6 +112,9 @@ export function BottomSheet({
               'ring-1 ring-white/5',
               'overflow-hidden',
               'flex flex-col',
+              // Tablet/Desktop: centered floating card
+              'md:max-w-xl md:mx-auto md:rounded-3xl md:bottom-4 md:left-4 md:right-4 md:!h-auto',
+              'lg:max-w-2xl',
               className
             )}
           >
@@ -116,7 +132,7 @@ export function BottomSheet({
                 'flex-1 overflow-hidden flex flex-col',
                 !isExpanded && 'cursor-pointer' // Add pointer cursor to indicate clickability
               )}
-              onClick={() => !isExpanded && setSheetState('expanded')}
+              onClick={() => !isExpanded && setExpanded(true)}
             >
               {isExpanded && expandedContent ? expandedContent : children}
             </div>

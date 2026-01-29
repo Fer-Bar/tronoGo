@@ -25,7 +25,7 @@ export function NearbyList({
   return (
     <div className="absolute inset-0 z-30 pointer-events-none flex flex-col justify-end">
       {/* Lista - Solo esta parte bloquea el mapa */}
-      <div className="pointer-events-auto max-h-[50vh] bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 rounded-t-3xl shadow-2xl overflow-hidden flex flex-col animate-in slide-in-from-bottom duration-300">
+      <div className="pointer-events-auto max-h-[50vh] bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 rounded-t-3xl shadow-2xl overflow-hidden flex flex-col animate-in slide-in-from-bottom duration-300 md:max-w-xl md:mx-auto md:rounded-3xl md:mb-4 lg:max-w-2xl w-full">
         {/* Header */}
         <div className="sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-6 py-4 flex items-center justify-between shrink-0 z-10">
           <h3 className="font-bold text-lg text-gray-900 dark:text-white">Baños cercanos ({restrooms.length})</h3>

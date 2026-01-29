@@ -2,10 +2,12 @@ import { useState, useRef, useEffect } from 'react'
 import { IconLogout, IconUser } from '@tabler/icons-react'
 import { useAuthStore } from '../../lib/authStore'
 import { LoginButton } from './LoginButton'
+import { EditProfileModal } from './EditProfileModal'
 
 export function ProfileButton() {
     const { user, loading, signOut } = useAuthStore()
     const [isMenuOpen, setIsMenuOpen] = useState(false)
+    const [isEditProfileOpen, setIsEditProfileOpen] = useState(false)
     const menuRef = useRef<HTMLDivElement>(null)
 
     // Close menu when clicking outside
@@ -72,6 +74,17 @@ export function ProfileButton() {
 
                     {/* Menu Items */}
                     <div className="py-1">
+                         <button
+                            onClick={() => {
+                                setIsMenuOpen(false)
+                                setIsEditProfileOpen(true)
+                            }}
+                            className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        >
+                            <IconUser className="size-4" />
+                            <span>Editar Perfil</span>
+                        </button>
+
                         <button
                             onClick={() => {
                                 setIsMenuOpen(false)
@@ -85,6 +98,11 @@ export function ProfileButton() {
                     </div>
                 </div>
             )}
+
+            <EditProfileModal 
+                isOpen={isEditProfileOpen} 
+                onClose={() => setIsEditProfileOpen(false)} 
+            />
         </div>
     )
 }

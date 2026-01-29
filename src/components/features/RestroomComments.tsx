@@ -264,7 +264,9 @@ export function RestroomComments({ restroomId, isWritingReview, onCloseReview }:
                                 </div>
                             </div>
                         </div>
-                        <p className="text-sm text-gray-300 leading-relaxed break-words mt-2">{comment.content}</p>
+                        {comment.content && (
+                            <p className="text-sm text-gray-300 leading-relaxed break-words mt-2">{comment.content}</p>
+                        )}
                     </div>
                     </div>
                 </div>
