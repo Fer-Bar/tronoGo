@@ -5,27 +5,39 @@ import { supabase } from './supabase'
 interface AuthState {
     user: User | null
     session: Session | null
+    profile: Profile | null
     loading: boolean
     isAdmin: boolean
     setUser: (user: User | null) => void
     setSession: (session: Session | null) => void
+    setProfile: (profile: Profile | null) => void
     setLoading: (loading: boolean) => void
     setIsAdmin: (isAdmin: boolean) => void
     signInWithGoogle: () => Promise<void>
     signOut: () => Promise<void>
     initialize: () => () => void
     refreshSession: () => Promise<void>
-    fetchAdminStatus: (userId: string) => Promise<void>
+    fetchProfile: (userId: string) => Promise<void>
+}
+
+interface Profile {
+    id: string
+    full_name: string | null
+    avatar_url: string | null
+    is_admin: boolean
+    updated_at: string | null
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
     user: null,
     session: null,
+    profile: null,
     loading: true,
     isAdmin: false,
 
     setUser: (user) => set({ user }),
     setSession: (session) => set({ session }),
+    setProfile: (profile) => set({ profile }),
     setLoading: (loading) => set({ loading }),
     setIsAdmin: (isAdmin) => set({ isAdmin }),
 
@@ -46,35 +58,37 @@ export const useAuthStore = create<AuthState>((set) => ({
         if (error) {
             console.error('Error signing out:', error.message)
         }
-        set({ isAdmin: false })
+        set({ isAdmin: false, profile: null })
     },
 
-    fetchAdminStatus: async (userId: string) => {
+    fetchProfile: async (userId: string) => {
         const { data, error } = await supabase
             .from('profiles')
-            .select('is_admin')
+            .select('*')
             .eq('id', userId)
             .single()
 
         if (error) {
-            console.error('Error fetching admin status:', error.message)
-            set({ isAdmin: false })
+            console.error('Error fetching profile:', error.message)
+            set({ isAdmin: false, profile: null })
             return
         }
 
-        // Type assertion since the database types should include is_admin
-        const profile = data as { is_admin: boolean } | null
-        set({ isAdmin: profile?.is_admin ?? false })
+        const profile = data as Profile
+        set({
+            profile,
+            isAdmin: profile.is_admin ?? false
+        })
     },
 
     initialize: () => {
-        const { fetchAdminStatus } = useAuthStore.getState()
+        const { fetchProfile } = useAuthStore.getState()
 
         // Get initial session
         supabase.auth.getSession().then(({ data: { session } }) => {
             set({ session, user: session?.user ?? null, loading: false })
             if (session?.user) {
-                fetchAdminStatus(session.user.id)
+                fetchProfile(session.user.id)
             }
         })
 
@@ -83,9 +97,9 @@ export const useAuthStore = create<AuthState>((set) => ({
             (_event, session) => {
                 set({ session, user: session?.user ?? null, loading: false })
                 if (session?.user) {
-                    fetchAdminStatus(session.user.id)
+                    fetchProfile(session.user.id)
                 } else {
-                    set({ isAdmin: false })
+                    set({ isAdmin: false, profile: null })
                 }
             }
         )
@@ -100,7 +114,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         const { data: { session } } = await supabase.auth.refreshSession()
         set({ session, user: session?.user ?? null })
         if (session?.user) {
-            useAuthStore.getState().fetchAdminStatus(session.user.id)
+            await useAuthStore.getState().fetchProfile(session.user.id)
         }
     },
 }))

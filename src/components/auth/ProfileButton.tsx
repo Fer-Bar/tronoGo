@@ -9,7 +9,7 @@ interface ProfileButtonProps {
 }
 
 export function ProfileButton({ onAdminClick }: ProfileButtonProps) {
-    const { user, loading, signOut, isAdmin } = useAuthStore()
+    const { user, profile, loading, signOut, isAdmin } = useAuthStore()
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const [isEditProfileOpen, setIsEditProfileOpen] = useState(false)
     const menuRef = useRef<HTMLDivElement>(null)
@@ -41,8 +41,8 @@ export function ProfileButton({ onAdminClick }: ProfileButtonProps) {
         return <LoginButton />
     }
 
-    const avatarUrl = user.user_metadata?.avatar_url
-    const displayName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'Usuario'
+    const avatarUrl = profile?.avatar_url || user.user_metadata?.avatar_url
+    const displayName = profile?.full_name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'Usuario'
     const initials = displayName.slice(0, 2).toUpperCase()
 
     return (
@@ -127,12 +127,12 @@ export function ProfileButton({ onAdminClick }: ProfileButtonProps) {
 
 // Also export a simpler version just for showing user icon when logged in
 export function UserAvatar() {
-    const { user } = useAuthStore()
+    const { user, profile } = useAuthStore()
     
     if (!user) return null
 
-    const avatarUrl = user.user_metadata?.avatar_url
-    const displayName = user.user_metadata?.full_name || 'U'
+    const avatarUrl = profile?.avatar_url || user.user_metadata?.avatar_url
+    const displayName = profile?.full_name || user.user_metadata?.full_name || 'U'
 
     return (
         <div className="flex items-center justify-center size-8 rounded-full overflow-hidden bg-primary-600 text-white font-bold">

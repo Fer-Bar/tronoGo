@@ -13,9 +13,10 @@ interface EditProfileModalProps {
 
 export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
   const user = useAuthStore(state => state.user)
+  const profile = useAuthStore(state => state.profile)
   const refreshSession = useAuthStore(state => state.refreshSession)
   
-  const [fullName, setFullName] = useState(user?.user_metadata?.full_name || '')
+  const [fullName, setFullName] = useState(profile?.full_name || user?.user_metadata?.full_name || '')
   const [loading, setLoading] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
