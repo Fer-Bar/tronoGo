@@ -47,6 +47,8 @@ export const AMENITY_LABELS: Record<string, string> = {
     soap: 'Jabón',
     private: 'Privado',
     sink: 'Lavamanos',
+    male: 'Hombres',
+    female: 'Mujeres',
 }
 
 // Icons for consistency across app
@@ -61,7 +63,9 @@ import {
     IconDroplet,
     IconWash,
     IconGenderBigender,
-    IconGenderAgender
+    IconGenderAgender,
+    IconGenderMale,
+    IconGenderFemale
 } from '@tabler/icons-react'
 
 export const TYPE_ICONS: Record<string, TablerIcon> = {
@@ -78,6 +82,8 @@ export const AMENITY_ICONS: Record<string, TablerIcon> = {
     paper: IconToiletPaper,
     soap: IconDroplet,
     sink: IconWash,
-    private: IconGenderBigender,
-    unisex: IconGenderAgender,
+    private: IconGenderAgender,
+    unisex: IconGenderBigender,
+    male: IconGenderMale,
+    female: IconGenderFemale,
 }
