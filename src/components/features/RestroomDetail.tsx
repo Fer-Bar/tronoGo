@@ -32,12 +32,19 @@ function SummaryView({ restroom, onWriteReview }: { restroom: Restroom; onWriteR
       <div className="space-y-1">
         <div className="flex items-start justify-between gap-2">
            <h3 className="font-bold text-2xl md:text-xl text-white truncate leading-tight">{restroom.name}</h3>
-           <div className="flex items-center gap-1 bg-primary-500/10 px-2 py-1 rounded-lg shrink-0">
-              <span className="text-primary-400 font-bold text-sm">
-                {restroom.vote_count > 0 ? restroom.rating.toFixed(1) : '-'}
-              </span>
-              <IconStarFilled className="size-3 text-primary-400" />
-           </div>
+           {restroom.vote_count > 0 ? (
+             <div className="flex items-center gap-1 bg-primary-500/10 px-2 py-1 rounded-lg shrink-0">
+               <span className="text-primary-400 font-bold text-sm">
+                 {restroom.rating.toFixed(1)}
+               </span>
+               <IconStarFilled className="size-3 text-primary-400" />
+             </div>
+           ) : (
+             <div className="flex items-center gap-1 bg-gray-800/60 px-2 py-1 rounded-lg shrink-0">
+               <span className="text-gray-400 font-bold text-xs">0 votos</span>
+               <IconStar className="size-3 text-gray-400" />
+             </div>
+           )}
         </div>
         <p className="text-gray-400 text-sm truncate">{formatShortAddress(restroom.address)}</p>
         
@@ -149,15 +156,22 @@ function ExpandedView({
             <div>
               <h1 className="text-3xl md:text-2xl font-bold text-white tracking-tight leading-tight">{restroom.name}</h1>
             </div>
-            <div className="flex flex-col lg:flex-row items-center lg:gap-3 bg-gray-800/60 border border-primary-500/20 px-3 py-2 rounded-xl shrink-0 ml-2">
-              <div className="flex items-center gap-1">
-                <span className="text-primary-400 font-bold text-xl md:text-lg">
-                  {restroom.vote_count > 0 ? restroom.rating.toFixed(1) : '-'}
-                </span>
-                <IconStarFilled className="size-4 text-primary-400" />
+            {restroom.vote_count > 0 ? (
+              <div className="flex flex-col lg:flex-row items-center lg:gap-3 bg-gray-800/60 border border-primary-500/20 px-3 py-2 rounded-xl shrink-0 ml-2">
+                <div className="flex items-center gap-1">
+                  <span className="text-primary-400 font-bold text-xl md:text-lg">
+                    {restroom.rating.toFixed(1)}
+                  </span>
+                  <IconStarFilled className="size-4 text-primary-400" />
+                </div>
+                <span className="text-[10px] uppercase tracking-wider text-gray-400 font-bold whitespace-nowrap">{restroom.vote_count} votos</span>
               </div>
-              <span className="text-[10px] uppercase tracking-wider text-gray-400 font-bold whitespace-nowrap">{restroom.vote_count} votos</span>
-            </div>
+            ) : (
+              <div className="flex items-center gap-2 bg-gray-800/60 px-3 py-2 rounded-xl shrink-0 ml-2">
+                <span className="text-sm font-bold text-gray-400">0 votos</span>
+                <IconStar className="size-4 text-gray-400" />
+              </div>
+            )}
           </div>
           
            <div className="flex items-center gap-2 text-gray-400 text-sm font-medium">
