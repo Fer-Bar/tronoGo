@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { RestroomComments } from '../../components/features/RestroomComments'
+import type { ReactNode } from 'react'
 
 // Mock Dependencies
 const { mockSupabase, mockSignIn, mockUser } = vi.hoisted(() => {
@@ -48,9 +49,9 @@ vi.mock('sonner', () => ({
 // Mock framer-motion to avoid animation delays in tests
 vi.mock('framer-motion', () => ({
     motion: {
-        div: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => <div {...props}>{children}</div>
+        div: ({ children, ...props }: { children: ReactNode; [key: string]: unknown }) => <div {...props}>{children}</div>
     },
-    AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>
+    AnimatePresence: ({ children }: { children: ReactNode }) => <>{children}</>
 }))
 
 describe('RestroomComments Component', () => {

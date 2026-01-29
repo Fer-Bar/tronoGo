@@ -2,7 +2,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { StarRating } from '../../components/ui/StarRating'
-import React from 'react'
 
 describe('StarRating Component', () => {
     it('renders correct number of stars', () => {
