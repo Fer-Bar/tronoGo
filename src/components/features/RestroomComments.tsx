@@ -12,7 +12,9 @@ import 'dayjs/locale/es'
 dayjs.extend(relativeTime)
 dayjs.locale('es')
 
-type Comment = Database['public']['Tables']['comments']['Row']
+type Comment = Database['public']['Tables']['comments']['Row'] & {
+  profiles: Pick<Database['public']['Tables']['profiles']['Row'], 'full_name' | 'avatar_url'> | null
+}
 
 interface RestroomCommentsProps {
   restroomId: string
@@ -35,7 +37,7 @@ export function RestroomComments({ restroomId }: RestroomCommentsProps) {
       const limit = 3
       const { data, error } = await supabase
         .from('comments')
-        .select('*')
+        .select('*, profiles(full_name, avatar_url)')
         .eq('restroom_id', restroomId)
         .order('created_at', { ascending: false })
         .limit(limit + 1)
@@ -62,7 +64,7 @@ export function RestroomComments({ restroomId }: RestroomCommentsProps) {
     try {
       const { data, error } = await supabase
         .from('comments')
-        .select('*')
+        .select('*, profiles(full_name, avatar_url)')
         .eq('restroom_id', restroomId)
         .order('created_at', { ascending: false })
 
@@ -165,12 +167,24 @@ export function RestroomComments({ restroomId }: RestroomCommentsProps) {
                 {comments.map((comment) => (
                 <div key={comment.id} className="bg-gray-800/40 p-3 rounded-xl border border-white/5">
                     <div className="flex items-start gap-3">
-                    <div className="bg-gray-700/50 p-1.5 rounded-full shrink-0">
-                        <IconUser className="size-4 text-gray-400" />
+                    <div className="shrink-0">
+                        {comment.profiles?.avatar_url ? (
+                            <img 
+                                src={comment.profiles.avatar_url} 
+                                alt={comment.profiles.full_name || 'Usuario'} 
+                                className="size-8 rounded-full object-cover bg-gray-700/50"
+                            />
+                        ) : (
+                            <div className="bg-gray-700/50 p-1.5 rounded-full">
+                                <IconUser className="size-4 text-gray-400" />
+                            </div>
+                        )}
                     </div>
                     <div className="flex-1 min-w-0">
                         <div className="flex items-baseline justify-between mb-1">
-                            <span className="text-xs font-bold text-gray-300">Usuario</span>
+                            <span className="text-xs font-bold text-gray-300">
+                                {comment.profiles?.full_name || 'Usuario'}
+                            </span>
                             <span className="text-[10px] text-gray-500">
                                 {dayjs(comment.created_at).fromNow()}
                             </span>

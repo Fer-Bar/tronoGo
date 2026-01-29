@@ -34,6 +34,34 @@ export interface Restroom {
 export interface Database {
     public: {
         Tables: {
+            profiles: {
+                Row: {
+                    id: string
+                    full_name: string | null
+                    avatar_url: string | null
+                    updated_at: string | null
+                }
+                Insert: {
+                    id: string
+                    full_name?: string | null
+                    avatar_url?: string | null
+                    updated_at?: string | null
+                }
+                Update: {
+                    id?: string
+                    full_name?: string | null
+                    avatar_url?: string | null
+                    updated_at?: string | null
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "profiles_id_fkey"
+                        columns: ["id"]
+                        referencedRelation: "users"
+                        referencedColumns: ["id"]
+                    }
+                ]
+            }
             restrooms: {
                 Row: Restroom
                 Insert: {
