@@ -163,7 +163,6 @@ export function AddRestroomModal({ isOpen, onClose, onSuccess }: AddRestroomModa
         closing_time: closeTime || null,
         description: description || null,
         photos: uploadedPhotoUrls,
-        is_free: isFree,
       }
 
       const { data, error } = await supabase
