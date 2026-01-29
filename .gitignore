@@ -32,3 +32,4 @@ constitution.md
 .env*.local
 .agent
 supabase/
+.github/agents/

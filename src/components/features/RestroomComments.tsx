@@ -1,8 +1,9 @@
 import { useEffect, useState, useCallback } from 'react'
 import type { FormEvent } from 'react'
+import { createPortal } from 'react-dom'
 import { supabase } from '../../lib/supabase'
 import type { Database, TablesInsert } from '../../lib/database.types'
-import { IconUser, IconSend, IconX, IconMessagePlus } from '@tabler/icons-react'
+import { IconUser, IconSend, IconX } from '@tabler/icons-react'
 import dayjs from 'dayjs'
 import { useAuthStore } from '../../lib/authStore'
 import { toast } from 'sonner'
@@ -20,22 +21,23 @@ type Comment = Database['public']['Tables']['comments']['Row'] & {
 
 interface RestroomCommentsProps {
   restroomId: string
+  isWritingReview: boolean
+  onCloseReview: () => void
 }
 
-export function RestroomComments({ restroomId }: RestroomCommentsProps) {
+export function RestroomComments({ restroomId, isWritingReview, onCloseReview }: RestroomCommentsProps) {
   const [comments, setComments] = useState<Comment[]>([])
   const [loading, setLoading] = useState(true)
   const [hasMore, setHasMore] = useState(false)
   const [expanded, setExpanded] = useState(false)
   
   // Form State
-  const [isWritingReview, setIsWritingReview] = useState(false)
   const [newComment, setNewComment] = useState('')
   const [rating, setRating] = useState(0)
   const [submitting, setSubmitting] = useState(false)
   
   const user = useAuthStore(state => state.user)
-  const signIn = useAuthStore(state => state.signInWithGoogle)
+  // signIn handled by parent/actions
 
   const fetchComments = useCallback(async () => {
     try {
@@ -104,18 +106,23 @@ export function RestroomComments({ restroomId }: RestroomCommentsProps) {
             rating: rating
         }
 
-        const { error } = await supabase
+        const { data, error } = await supabase
             .from('comments')
             // @ts-expect-error Supabase type inference failing for insert
             .insert(commentData)
+            .select('*, profiles(full_name, avatar_url)')
+            .single()
 
         if (error) throw error
 
         setNewComment('')
         setRating(0)
-        setIsWritingReview(false)
+        onCloseReview()
         toast.success('Reseña publicada')
-        fetchComments() // Refresh list
+        
+        if (data) {
+            setComments(prev => [data as Comment, ...prev])
+        }
     } catch (err) {
         console.error('Error submitting comment:', err)
         toast.error('Error al enviar reseña')
@@ -124,18 +131,10 @@ export function RestroomComments({ restroomId }: RestroomCommentsProps) {
     }
   }
 
-  const handleStartReview = () => {
-      if (!user) {
-          signIn()
-          return
-      }
-      setIsWritingReview(true)
-  }
-
-  const handleCancelReview = () => {
-      setIsWritingReview(false)
+  const handleCancel = () => {
       setNewComment('')
       setRating(0)
+      onCloseReview()
   }
 
   if (loading && comments.length === 0) {
@@ -144,30 +143,16 @@ export function RestroomComments({ restroomId }: RestroomCommentsProps) {
 
   return (
     <div className="space-y-6 relative">
-        {/* Header / Call to Action */}
-        <div className="flex items-center justify-between">
-            <h3 className="text-base font-bold text-white hidden">Opiniones</h3>
-            {!isWritingReview && (
-              <button
-                  onClick={handleStartReview}
-                  className="w-full bg-gray-800/60 hover:bg-gray-800 border-2 border-dashed border-gray-700 hover:border-primary-500/50 text-gray-400 hover:text-primary-400 font-medium py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 group"
-              >
-                  <IconMessagePlus className="size-5 group-hover:scale-110 transition-transform" />
-                  <span>¡Escribe una reseña!</span>
-              </button>
-            )}
-        </div>
-
-        {/* Review Form Modal/Overlay */}
-        <AnimatePresence>
-            {isWritingReview && (
-                <>
+        {/* Review Form Modal/Overlay - Using Portal */}
+        {createPortal(
+            <AnimatePresence>
+                {isWritingReview && (
                     <motion.div 
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-                        onClick={handleCancelReview}
+                        className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[9999] flex items-center justify-center p-4"
+                        onClick={handleCancel}
                         style={{ touchAction: 'none' }}
                     >
                          {/* Centered Modal */}
@@ -175,12 +160,12 @@ export function RestroomComments({ restroomId }: RestroomCommentsProps) {
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside
+                            onClick={(e) => e.stopPropagation()} 
                             className="bg-gray-900 border border-gray-800 rounded-3xl p-6 w-full max-w-md shadow-2xl relative"
                         >
                             <div className="flex justify-between items-center mb-6">
                                 <h3 className="text-xl font-bold text-white">Escribe tu reseña</h3>
-                                <button onClick={handleCancelReview} className="p-2 hover:bg-gray-800 rounded-full text-gray-400 hover:text-white transition-colors">
+                                <button onClick={handleCancel} className="p-2 hover:bg-gray-800 rounded-full text-gray-400 hover:text-white transition-colors">
                                     <IconX size={20} />
                                 </button>
                             </div>
@@ -209,7 +194,7 @@ export function RestroomComments({ restroomId }: RestroomCommentsProps) {
                                 <div className="flex justify-end gap-3 pt-2">
                                     <button
                                         type="button"
-                                        onClick={handleCancelReview}
+                                        onClick={handleCancel}
                                         className="px-5 py-2.5 rounded-xl font-semibold text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
                                         disabled={submitting}
                                     >
@@ -231,9 +216,10 @@ export function RestroomComments({ restroomId }: RestroomCommentsProps) {
                             </form>
                         </motion.div>
                     </motion.div>
-                </>
-            )}
-        </AnimatePresence>
+                )}
+            </AnimatePresence>,
+            document.body
+        )}
 
       {comments.length === 0 ? (
         <div className="text-center py-8 bg-gray-900/50 rounded-2xl border border-white/5 border-dashed">

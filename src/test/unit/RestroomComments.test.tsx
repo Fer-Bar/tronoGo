@@ -1,6 +1,5 @@
-
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { RestroomComments } from '../../components/features/RestroomComments'
 import React from 'react'
 
@@ -29,9 +28,8 @@ vi.mock('../../lib/supabase', () => ({
 }))
 
 // Mock store with a simple implementation we can control
-const mockUseAuthStore = vi.fn()
 vi.mock('../../lib/authStore', () => ({
-    useAuthStore: (selector: any) => selector({
+    useAuthStore: (selector: (state: { user: any; signInWithGoogle: any }) => any) => selector({
         user: mockUser, // Default to logged in
         signInWithGoogle: mockSignIn
     })
@@ -44,23 +42,36 @@ vi.mock('sonner', () => ({
     }
 }))
 
+// Mock createPortal since it's not supported in standard JSDOM render without a container usually,
+// but testing-library handles it ok. However, defining it ensures no issues.
+// Actually standard JSDOM supports it.
+
+// Mock framer-motion to avoid animation delays in tests
+vi.mock('framer-motion', () => ({
+    motion: {
+        div: ({ children, ...props }: any) => <div {...props}>{children}</div>
+    },
+    AnimatePresence: ({ children }: any) => <>{children}</>
+}))
+
 describe('RestroomComments Component', () => {
+    const defaultProps = {
+        restroomId: '123',
+        isWritingReview: false,
+        onCloseReview: vi.fn()
+    }
+
     beforeEach(() => {
         vi.clearAllMocks()
     })
 
-    it('renders "Write Review" button', async () => {
-        render(<RestroomComments restroomId="123" />)
-        expect(await screen.findByText('¡Escribe una reseña!')).toBeInTheDocument()
+    it('renders empty state when no comments', async () => {
+        render(<RestroomComments {...defaultProps} />)
+        expect(await screen.findByText('Aún no hay reseñas')).toBeInTheDocument()
     })
 
-    it('opens modal when "Write Review" is clicked', async () => {
-        render(<RestroomComments restroomId="123" />)
-        
-        const button = await screen.findByText('¡Escribe una reseña!')
-        fireEvent.click(button)
-
-        expect(await screen.findByText('Escribe tu reseña')).toBeInTheDocument()
-        expect(screen.getByPlaceholderText(/Comparte tu experiencia/i)).toBeInTheDocument()
+    it('renders modal when isWritingReview is true', async () => {
+        render(<RestroomComments {...defaultProps} isWritingReview={true} />)
+        expect(await screen.findByText("Escribe tu reseña")).toBeInTheDocument()
     })
 })
