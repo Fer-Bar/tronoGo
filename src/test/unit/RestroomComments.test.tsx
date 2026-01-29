@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { RestroomComments } from '../../components/features/RestroomComments'
-import React from 'react'
 
 // Mock Dependencies
 const { mockSupabase, mockSignIn, mockUser } = vi.hoisted(() => {
