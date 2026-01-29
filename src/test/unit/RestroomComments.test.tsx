@@ -28,7 +28,7 @@ vi.mock('../../lib/supabase', () => ({
 
 // Mock store with a simple implementation we can control
 vi.mock('../../lib/authStore', () => ({
-    useAuthStore: (selector: (state: { user: any; signInWithGoogle: any }) => any) => selector({
+    useAuthStore: (selector: (state: unknown) => unknown) => selector({
         user: mockUser, // Default to logged in
         signInWithGoogle: mockSignIn
     })
@@ -48,9 +48,9 @@ vi.mock('sonner', () => ({
 // Mock framer-motion to avoid animation delays in tests
 vi.mock('framer-motion', () => ({
     motion: {
-        div: ({ children, ...props }: any) => <div {...props}>{children}</div>
+        div: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => <div {...props}>{children}</div>
     },
-    AnimatePresence: ({ children }: any) => <>{children}</>
+    AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>
 }))
 
 describe('RestroomComments Component', () => {
