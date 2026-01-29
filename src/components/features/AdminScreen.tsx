@@ -97,7 +97,7 @@ export function AdminScreen({ onBack }: AdminScreenProps) {
         if (!error) {
             setRestrooms(restrooms.filter(r => r.id !== id))
             setDeleteConfirm(null)
-            toast.success('Bano eliminado')
+            toast.success('Baño eliminado')
         } else {
             toast.error('Error al eliminar')
         }
@@ -151,7 +151,7 @@ export function AdminScreen({ onBack }: AdminScreenProps) {
                     <IconArrowLeft className="size-5 text-white" />
                 </button>
                 <h1 className="text-xl font-bold text-white">
-                    {activeView === 'dashboard' ? 'Panel de Administracion' : 'Gestion de Banos'}
+                    {activeView === 'dashboard' ? 'Panel de Administracion' : 'Gestion de Baños'}
                 </h1>
             </header>
 
@@ -172,7 +172,7 @@ export function AdminScreen({ onBack }: AdminScreenProps) {
                                 >
                                     <div className="flex items-center gap-3 mb-2">
                                         <IconToiletPaper className="size-6 text-primary-400" />
-                                        <h3 className="text-lg font-semibold text-white">Total Banos</h3>
+                                        <h3 className="text-lg font-semibold text-white">Total Baños</h3>
                                     </div>
                                     <p className="text-3xl font-bold text-white">{stats.total}</p>
                                     <p className="text-sm text-gray-400 mt-1 group-hover:text-primary-400 transition-colors">Ver todos →</p>
@@ -222,7 +222,7 @@ export function AdminScreen({ onBack }: AdminScreenProps) {
                                         <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-gray-400" />
                                         <input
                                             type="text"
-                                            placeholder="Buscar banos..."
+                                            placeholder="Buscar baños..."
                                             value={searchQuery}
                                             onChange={(e) => setSearchQuery(e.target.value)}
                                             className="w-full pl-10 pr-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
@@ -249,7 +249,7 @@ export function AdminScreen({ onBack }: AdminScreenProps) {
                                 {/* Restroom List */}
                                 <div className="space-y-3">
                                     {filteredRestrooms.length === 0 ? (
-                                        <p className="text-gray-400 text-center py-8">No se encontraron banos</p>
+                                        <p className="text-gray-400 text-center py-8">No se encontraron baños</p>
                                     ) : (
                                         filteredRestrooms.map(restroom => {
                                             const restroomComments = getRestroomComments(restroom.id)
@@ -563,7 +563,7 @@ function EditRestroomModal({ restroom, onClose, onSave }: EditRestroomModalProps
                 toast.error('Error al guardar')
                 console.error(error)
             } else {
-                toast.success('Bano actualizado')
+                toast.success('Baño actualizado')
                 await onSave({ ...form, photos: finalPhotos })
             }
         } finally {
@@ -596,7 +596,7 @@ function EditRestroomModal({ restroom, onClose, onSave }: EditRestroomModalProps
                 >
                     {/* Header */}
                     <div className="flex items-center justify-between px-6 py-4 border-b border-gray-700 shrink-0">
-                        <h2 className="text-lg font-bold text-white">Editar Bano</h2>
+                        <h2 className="text-lg font-bold text-white">Editar Baño</h2>
                         <button onClick={onClose} className="p-2 hover:bg-gray-700 rounded-lg">
                             <IconX className="size-5 text-gray-400" />
                         </button>
