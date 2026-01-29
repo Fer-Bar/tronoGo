@@ -12,9 +12,10 @@ interface ExploreScreenProps {
   onAddClick: () => void
   onFlyToUser?: () => void
   onFlyToRestroom?: (longitude: number, latitude: number) => void
+  onAdminClick?: () => void
 }
 
-export function ExploreScreen({ onAddClick, onFlyToUser, onFlyToRestroom }: ExploreScreenProps) {
+export function ExploreScreen({ onAddClick, onFlyToUser, onFlyToRestroom, onAdminClick }: ExploreScreenProps) {
   const { restrooms, selectedRestroom, setSelectedRestroom, setMapViewState, userLocation, filters, setFilters } =
     useAppStore()
   const user = useAuthStore(state => state.user)
@@ -85,7 +86,7 @@ export function ExploreScreen({ onAddClick, onFlyToUser, onFlyToRestroom }: Expl
 
       {/* Profile Button - Bottom left for ergonomic mobile access */}
       <div className="absolute bottom-6 left-6 z-30 pointer-events-auto">
-        <ProfileButton />
+        <ProfileButton onAdminClick={onAdminClick} />
       </div>
 
       {/* Map Mode Toggle Button */}

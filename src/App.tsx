@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
-import { ExploreScreen, PinPickerScreen, AddRestroomModal } from './components/features'
+import { ExploreScreen, PinPickerScreen, AddRestroomModal, AdminScreen } from './components/features'
 import { Toaster } from 'sonner'
 import { useAppStore } from './lib/store'
 import { useAuthStore } from './lib/authStore'
@@ -10,7 +10,7 @@ import { MAPBOX_TOKEN } from './lib/constants'
 import { getCachedLocation, initGeolocation } from './lib/geolocation'
 import type { Restroom } from './lib/database.types'
 
-type Screen = 'explore' | 'pin-picker'
+type Screen = 'explore' | 'pin-picker' | 'admin'
 
 function App() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('explore')
@@ -170,6 +170,16 @@ function App() {
   }, [])
 
 
+  // Navigate to admin screen
+  const handleAdminClick = useCallback(() => {
+    setCurrentScreen('admin')
+  }, [])
+
+  // Navigate back from admin
+  const handleAdminBack = useCallback(() => {
+    setCurrentScreen('explore')
+  }, [])
+
   return (
     <div className="h-dvh w-screen overflow-hidden relative bg-gray-900">
       
@@ -178,7 +188,7 @@ function App() {
           <MapboxMap 
              ref={mapRef}
              restrooms={filteredRestrooms} 
-             mode={currentScreen} 
+             mode={currentScreen === 'pin-picker' ? 'pin-picker' : 'explore'} 
              onMoveEnd={(coords) => fetchAddress(undefined, coords)}
              onMarkerClick={handleMarkerClick}
           />
@@ -191,6 +201,7 @@ function App() {
                  onAddClick={handleAddClick} 
                  onFlyToUser={handleFlyToUser}
                  onFlyToRestroom={handleFlyToRestroom}
+                 onAdminClick={handleAdminClick}
                />
             </div>
           )}
@@ -203,6 +214,10 @@ function App() {
                   onConfirm={handlePinPickerConfirm}
                 />
             </div>
+          )}
+
+          {currentScreen === 'admin' && (
+            <AdminScreen onBack={handleAdminBack} />
           )}
       </div>
 

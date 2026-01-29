@@ -1,11 +1,15 @@
 import { useState, useRef, useEffect } from 'react'
-import { IconLogout, IconUser } from '@tabler/icons-react'
+import { IconLogout, IconUser, IconShield } from '@tabler/icons-react'
 import { useAuthStore } from '../../lib/authStore'
 import { LoginButton } from './LoginButton'
 import { EditProfileModal } from './EditProfileModal'
 
-export function ProfileButton() {
-    const { user, loading, signOut } = useAuthStore()
+interface ProfileButtonProps {
+    onAdminClick?: () => void
+}
+
+export function ProfileButton({ onAdminClick }: ProfileButtonProps) {
+    const { user, loading, signOut, isAdmin } = useAuthStore()
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const [isEditProfileOpen, setIsEditProfileOpen] = useState(false)
     const menuRef = useRef<HTMLDivElement>(null)
@@ -84,6 +88,20 @@ export function ProfileButton() {
                             <IconUser className="size-4" />
                             <span>Editar Perfil</span>
                         </button>
+
+                        {/* Admin Button - Only visible to admins */}
+                        {isAdmin && onAdminClick && (
+                            <button
+                                onClick={() => {
+                                    setIsMenuOpen(false)
+                                    onAdminClick()
+                                }}
+                                className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
+                            >
+                                <IconShield className="size-4" />
+                                <span>Panel de Admin</span>
+                            </button>
+                        )}
 
                         <button
                             onClick={() => {

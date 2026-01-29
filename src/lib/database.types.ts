@@ -40,18 +40,21 @@ export interface Database {
                     full_name: string | null
                     avatar_url: string | null
                     updated_at: string | null
+                    is_admin: boolean
                 }
                 Insert: {
                     id: string
                     full_name?: string | null
                     avatar_url?: string | null
                     updated_at?: string | null
+                    is_admin?: boolean
                 }
                 Update: {
                     id?: string
                     full_name?: string | null
                     avatar_url?: string | null
                     updated_at?: string | null
+                    is_admin?: boolean
                 }
                 Relationships: [
                     {
