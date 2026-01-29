@@ -110,7 +110,7 @@ describe('filterAndSortRestrooms', () => {
             status: 'open',
             type: 'commerce',
             amenities: ['baby_changing', 'soap'],
-            verified: false,
+            verified: true,
             opening_time: null,
             closing_time: null,
             description: null,
@@ -128,9 +128,9 @@ describe('filterAndSortRestrooms', () => {
         isFree: null,
     }
 
-    it('returns all restrooms with no filters', () => {
+    it('returns all verified restrooms with no filters', () => {
         const result = filterAndSortRestrooms(mockRestrooms, defaultFilters, null)
-        expect(result).toHaveLength(2)
+        expect(result).toHaveLength(2) // Both are verified
     })
 
     it('filters by accessibility', () => {
@@ -167,5 +167,19 @@ describe('filterAndSortRestrooms', () => {
         const result = filterAndSortRestrooms(mockRestrooms, defaultFilters, userLocation)
         // Second restroom is closer to this location
         expect(result[0].name).toBe('Paid Baby Changer')
+    })
+
+    it('filters out unverified restrooms', () => {
+        const unverifiedRestroom: Restroom = {
+            ...mockRestrooms[0],
+            id: '3',
+            name: 'Unverified',
+            verified: false,
+        }
+        const mixedRestrooms = [...mockRestrooms, unverifiedRestroom]
+        const result = filterAndSortRestrooms(mixedRestrooms, defaultFilters, null)
+        // Should only return the 2 verified restrooms
+        expect(result).toHaveLength(2)
+        expect(result.find(r => r.name === 'Unverified')).toBeUndefined()
     })
 })

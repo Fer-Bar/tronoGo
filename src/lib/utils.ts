@@ -64,6 +64,11 @@ export function filterAndSortRestrooms(
     userLocation: { latitude: number; longitude: number } | null
 ): Restroom[] {
     return restrooms.filter((restroom) => {
+        // Only show verified restrooms to users
+        if (!restroom.verified) {
+            return false
+        }
+
         // 1. Accessibility
         if (filters.isAccessible && !restroom.amenities.includes('accessible')) {
             return false
