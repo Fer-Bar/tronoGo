@@ -132,6 +132,7 @@ export interface Database {
                     user_id: string
                     restroom_id: string
                     content: string
+                    rating: number | null
                 }
                 Insert: {
                     id?: string
@@ -139,6 +140,7 @@ export interface Database {
                     user_id: string
                     restroom_id: string
                     content: string
+                    rating?: number | null
                 }
                 Update: {
                     id?: string
@@ -146,6 +148,7 @@ export interface Database {
                     user_id?: string
                     restroom_id?: string
                     content?: string
+                    rating?: number | null
                 }
             }
         }

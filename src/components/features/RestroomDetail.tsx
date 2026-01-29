@@ -6,6 +6,7 @@ import { TYPE_LABELS, AMENITY_LABELS, TYPE_ICONS, AMENITY_ICONS } from '../../li
 import { formatShortAddress, formatDistance, calculateDistance } from '../../lib/utils'
 import type { Restroom } from '../../lib/database.types'
 import { useAppStore } from '../../lib/store'
+import { useState } from 'react'
 
 interface RestroomDetailProps {
   restroom: Restroom | null
@@ -13,10 +14,8 @@ interface RestroomDetailProps {
   onClose: () => void
 }
 
-
-
 // Collapsed Summary View
-function SummaryView({ restroom }: { restroom: Restroom }) {
+function SummaryView({ restroom, onWriteReview }: { restroom: Restroom; onWriteReview: () => void }) {
   const userLocation = useAppStore(state => state.userLocation)
   const distance = userLocation 
     ? formatDistance(calculateDistance(userLocation.latitude, userLocation.longitude, restroom.latitude, restroom.longitude))
@@ -26,9 +25,7 @@ function SummaryView({ restroom }: { restroom: Restroom }) {
   const closingTimeFormatted = restroom.closing_time 
     ? new Date(`1970-01-01T${restroom.closing_time}`).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
     : null
-    
 
-  
   return (
     <div className="pt-10 px-5 pb-5 h-full flex flex-col justify-between">
       {/* Header Info */}
@@ -67,14 +64,26 @@ function SummaryView({ restroom }: { restroom: Restroom }) {
 
       {/* Action Footer (Matches Sticky Footer) */}
       <div className="mt-4">
-         <RestroomActions restroom={restroom} />
+         <RestroomActions restroom={restroom} onWriteReview={onWriteReview} />
       </div>
     </div>
   )
 }
 
 // Expanded Detail View
-function ExpandedView({ restroom, onClose }: { restroom: Restroom; onClose: () => void }) {
+function ExpandedView({ 
+    restroom, 
+    onClose, 
+    isWritingReview, 
+    onWriteReview, 
+    onCloseReview 
+}: { 
+    restroom: Restroom; 
+    onClose: () => void; 
+    isWritingReview: boolean; 
+    onWriteReview: () => void; 
+    onCloseReview: () => void;
+}) {
   const userLocation = useAppStore(state => state.userLocation)
   const distance = userLocation 
     ? formatDistance(calculateDistance(userLocation.latitude, userLocation.longitude, restroom.latitude, restroom.longitude))
@@ -85,8 +94,6 @@ function ExpandedView({ restroom, onClose }: { restroom: Restroom; onClose: () =
   const closingTimeFormatted = restroom.closing_time 
     ? new Date(`1970-01-01T${restroom.closing_time}`).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
     : null
-
-
 
   return (
     <div className="flex flex-col h-full bg-gray-900">
@@ -234,20 +241,26 @@ function ExpandedView({ restroom, onClose }: { restroom: Restroom; onClose: () =
             </div>
           </div>
           <div className="pt-2">
-            <RestroomComments restroomId={restroom.id} />
+            <RestroomComments 
+                restroomId={restroom.id} 
+                isWritingReview={isWritingReview}
+                onCloseReview={onCloseReview}
+            />
           </div>
         </div>
       </div>
 
       {/* Sticky Footer */}
       <div className="absolute bottom-0 left-0 right-0 bg-gray-950/95 backdrop-blur-md border-t border-white/5 p-4 z-20">
-        <RestroomActions restroom={restroom} />
+        <RestroomActions restroom={restroom} onWriteReview={onWriteReview} />
       </div>
     </div>
   )
 }
 
 export function RestroomDetail({ restroom, isOpen, onClose }: RestroomDetailProps) {
+  const [isWritingReview, setIsWritingReview] = useState(false)
+
   if (!restroom) return null
 
   return (
@@ -255,9 +268,20 @@ export function RestroomDetail({ restroom, isOpen, onClose }: RestroomDetailProp
       isOpen={isOpen} 
       onClose={onClose}
       collapsedHeight={220} // Increased to accommodate the action actions row
-      expandedContent={<ExpandedView restroom={restroom} onClose={onClose} />}
+      expandedContent={
+        <ExpandedView 
+            restroom={restroom} 
+            onClose={onClose} 
+            isWritingReview={isWritingReview}
+            onWriteReview={() => setIsWritingReview(true)}
+            onCloseReview={() => setIsWritingReview(false)}
+        />
+      }
     >
-      <SummaryView restroom={restroom} />
+      <SummaryView 
+        restroom={restroom} 
+        onWriteReview={() => setIsWritingReview(true)}
+      />
     </BottomSheet>
   )
 }

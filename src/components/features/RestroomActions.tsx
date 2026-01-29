@@ -1,4 +1,4 @@
-import { IconNavigation, IconBookmark, IconShare } from '@tabler/icons-react'
+import { IconNavigation, IconBookmark, IconMessagePlus } from '@tabler/icons-react'
 import { toast } from 'sonner'
 import { useAuthStore } from '../../lib/authStore'
 import { supabase } from '../../lib/supabase'
@@ -7,10 +7,12 @@ import { useState, useEffect } from 'react'
 
 interface RestroomActionsProps {
   restroom: Restroom
+  onWriteReview: () => void
 }
 
-export function RestroomActions({ restroom }: RestroomActionsProps) {
+export function RestroomActions({ restroom, onWriteReview }: RestroomActionsProps) {
   const user = useAuthStore(state => state.user)
+  const signIn = useAuthStore(state => state.signInWithGoogle)
   const [isBookmarked, setIsBookmarked] = useState(false)
   const [loading, setLoading] = useState(false)
 
@@ -85,6 +87,8 @@ export function RestroomActions({ restroom }: RestroomActionsProps) {
           .from('bookmarks')
           // @ts-expect-error Supabase type inference failing for insert
           .insert(bookmarkData)
+          .select()
+          .single()
         
         if (error) throw error
         toast.success('Guardado en favoritos')
@@ -98,30 +102,13 @@ export function RestroomActions({ restroom }: RestroomActionsProps) {
     }
   }
 
-  const handleShare = async (e: React.MouseEvent) => {
-    e.stopPropagation()
-    // Maps location link
-    const url = `https://www.google.com/maps/search/?api=1&query=${restroom.latitude},${restroom.longitude}`
-    
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: restroom.name,
-          text: `Checa este baño en TronoGo: ${restroom.name}`,
-          url: url
-        })
-      } catch {
-        // Ignore abort errors
+  const handleReviewClick = (e: React.MouseEvent) => {
+      e.stopPropagation()
+      if (!user) {
+          signIn()
+          return
       }
-    } else {
-      // Fallback to clipboard
-      try {
-        await navigator.clipboard.writeText(url)
-        toast.success('Enlace de ubicación copiado')
-      } catch {
-        toast.error('No se pudo copiar el enlace')
-      }
-    }
+      onWriteReview()
   }
   
   return (
@@ -147,10 +134,10 @@ export function RestroomActions({ restroom }: RestroomActionsProps) {
       </button>
       
       <button 
-        onClick={handleShare}
+        onClick={handleReviewClick}
         className="h-12 w-12 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10 hover:text-white transition-colors cursor-pointer"
       >
-        <IconShare className="size-5" />
+        <IconMessagePlus className="size-5" />
       </button>
     </div>
   )

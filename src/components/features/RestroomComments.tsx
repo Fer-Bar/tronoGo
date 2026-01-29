@@ -2,12 +2,14 @@ import { useEffect, useState, useCallback } from 'react'
 import type { FormEvent } from 'react'
 import { supabase } from '../../lib/supabase'
 import type { Database, TablesInsert } from '../../lib/database.types'
-import { IconUser, IconSend } from '@tabler/icons-react'
+import { IconUser, IconSend, IconX, IconMessagePlus } from '@tabler/icons-react'
 import dayjs from 'dayjs'
 import { useAuthStore } from '../../lib/authStore'
 import { toast } from 'sonner'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import 'dayjs/locale/es'
+import { StarRating } from '../ui'
+import { motion, AnimatePresence } from 'framer-motion'
 
 dayjs.extend(relativeTime)
 dayjs.locale('es')
@@ -25,7 +27,11 @@ export function RestroomComments({ restroomId }: RestroomCommentsProps) {
   const [loading, setLoading] = useState(true)
   const [hasMore, setHasMore] = useState(false)
   const [expanded, setExpanded] = useState(false)
+  
+  // Form State
+  const [isWritingReview, setIsWritingReview] = useState(false)
   const [newComment, setNewComment] = useState('')
+  const [rating, setRating] = useState(0)
   const [submitting, setSubmitting] = useState(false)
   
   const user = useAuthStore(state => state.user)
@@ -84,14 +90,18 @@ export function RestroomComments({ restroomId }: RestroomCommentsProps) {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
-    if (!user || !newComment.trim()) return
+    if (!user || rating === 0) {
+        if (rating === 0) toast.error('Por favor califica con estrellas')
+        return
+    }
 
     setSubmitting(true)
     try {
         const commentData: TablesInsert<'comments'> = {
             restroom_id: restroomId,
             user_id: user.id,
-            content: newComment.trim()
+            content: newComment.trim(),
+            rating: rating
         }
 
         const { error } = await supabase
@@ -102,14 +112,30 @@ export function RestroomComments({ restroomId }: RestroomCommentsProps) {
         if (error) throw error
 
         setNewComment('')
-        toast.success('Comentario agregado')
+        setRating(0)
+        setIsWritingReview(false)
+        toast.success('Reseña publicada')
         fetchComments() // Refresh list
     } catch (err) {
         console.error('Error submitting comment:', err)
-        toast.error('Error al enviar comentario')
+        toast.error('Error al enviar reseña')
     } finally {
         setSubmitting(false)
     }
+  }
+
+  const handleStartReview = () => {
+      if (!user) {
+          signIn()
+          return
+      }
+      setIsWritingReview(true)
+  }
+
+  const handleCancelReview = () => {
+      setIsWritingReview(false)
+      setNewComment('')
+      setRating(0)
   }
 
   if (loading && comments.length === 0) {
@@ -117,79 +143,142 @@ export function RestroomComments({ restroomId }: RestroomCommentsProps) {
   }
 
   return (
-    <div className="space-y-6">
-        {/* Comment Form */}
-        <div className="bg-gray-800/40 p-4 rounded-xl border border-white/5">
-            {user ? (
-                <form onSubmit={handleSubmit} className="space-y-3">
-                    <textarea
-                        value={newComment}
-                        onChange={(e) => setNewComment(e.target.value)}
-                        placeholder="Comparte tu opinión sobre este baño..."
-                        className="w-full bg-gray-900/50 border border-white/10 rounded-lg p-3 text-sm text-gray-200 placeholder:text-gray-500 focus:outline-none focus:border-primary-500/50 resize-none h-24"
-                        disabled={submitting}
-                    />
-                    <div className="flex justify-end">
-                        <button
-                            type="submit"
-                            disabled={!newComment.trim() || submitting}
-                            className="bg-primary-500 text-gray-900 text-xs font-bold px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-primary-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                        >
-                            {submitting ? 'Enviando...' : (
-                                <>
-                                    <IconSend className="size-3" />
-                                    Enviar
-                                </>
-                            )}
-                        </button>
-                    </div>
-                </form>
-            ) : (
-                <div className="text-center space-y-3">
-                    <p className="text-sm text-gray-400">Inicia sesión para compartir tu opinión</p>
-                    <button
-                        onClick={signIn}
-                        className="text-primary-400 text-sm font-semibold hover:text-primary-300 transition-colors"
-                    >
-                        Iniciar Sesión
-                    </button>
-                </div>
+    <div className="space-y-6 relative">
+        {/* Header / Call to Action */}
+        <div className="flex items-center justify-between">
+            <h3 className="text-base font-bold text-white hidden">Opiniones</h3>
+            {!isWritingReview && (
+              <button
+                  onClick={handleStartReview}
+                  className="w-full bg-gray-800/60 hover:bg-gray-800 border-2 border-dashed border-gray-700 hover:border-primary-500/50 text-gray-400 hover:text-primary-400 font-medium py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 group"
+              >
+                  <IconMessagePlus className="size-5 group-hover:scale-110 transition-transform" />
+                  <span>¡Escribe una reseña!</span>
+              </button>
             )}
         </div>
 
+        {/* Review Form Modal/Overlay */}
+        <AnimatePresence>
+            {isWritingReview && (
+                <>
+                    <motion.div 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                        onClick={handleCancelReview}
+                        style={{ touchAction: 'none' }}
+                    >
+                         {/* Centered Modal */}
+                        <motion.div 
+                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                            onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside
+                            className="bg-gray-900 border border-gray-800 rounded-3xl p-6 w-full max-w-md shadow-2xl relative"
+                        >
+                            <div className="flex justify-between items-center mb-6">
+                                <h3 className="text-xl font-bold text-white">Escribe tu reseña</h3>
+                                <button onClick={handleCancelReview} className="p-2 hover:bg-gray-800 rounded-full text-gray-400 hover:text-white transition-colors">
+                                    <IconX size={20} />
+                                </button>
+                            </div>
+
+                            <form onSubmit={handleSubmit} className="space-y-6">
+                                <div className="flex flex-col items-center gap-2 py-4 bg-gray-800/30 rounded-2xl border border-white/5">
+                                    <span className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Tu calificación</span>
+                                    <StarRating 
+                                        value={rating} 
+                                        onChange={setRating} 
+                                        size={40}
+                                        className="gap-3"
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <textarea
+                                        value={newComment}
+                                        onChange={(e) => setNewComment(e.target.value)}
+                                        placeholder="Comparte tu experiencia... ¿Qué tal la limpieza? ¿El precio?"
+                                        className="w-full bg-gray-900/50 border border-white/10 rounded-xl p-4 text-gray-200 placeholder:text-gray-600 focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/50 resize-none h-32 text-base transition-all"
+                                        disabled={submitting}
+                                    />
+                                </div>
+
+                                <div className="flex justify-end gap-3 pt-2">
+                                    <button
+                                        type="button"
+                                        onClick={handleCancelReview}
+                                        className="px-5 py-2.5 rounded-xl font-semibold text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
+                                        disabled={submitting}
+                                    >
+                                        Cancelar
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={rating === 0 || submitting}
+                                        className="bg-primary-500 text-gray-950 font-bold px-6 py-2.5 rounded-xl flex items-center gap-2 hover:bg-primary-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-primary-500/20 active:scale-95"
+                                    >
+                                        {submitting ? 'Publicando...' : (
+                                            <>
+                                                <IconSend className="size-4" />
+                                                Publicar
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
+                            </form>
+                        </motion.div>
+                    </motion.div>
+                </>
+            )}
+        </AnimatePresence>
+
       {comments.length === 0 ? (
-        <div className="text-center py-4">
-            <p className="text-sm text-gray-500">Sé el primero en comentar sobre este baño.</p>
+        <div className="text-center py-8 bg-gray-900/50 rounded-2xl border border-white/5 border-dashed">
+            <p className="text-gray-500 mb-2">Aún no hay reseñas</p>
+            <p className="text-sm text-gray-600">Sé el primero en calificar este baño</p>
         </div>
       ) : (
         <div className="space-y-4">
             <div className="space-y-3">
                 {comments.map((comment) => (
-                <div key={comment.id} className="bg-gray-800/40 p-3 rounded-xl border border-white/5">
+                <div key={comment.id} className="bg-gray-900/50 p-4 rounded-2xl border border-white/5 hover:border-white/10 transition-colors">
                     <div className="flex items-start gap-3">
                     <div className="shrink-0">
                         {comment.profiles?.avatar_url ? (
                             <img 
                                 src={comment.profiles.avatar_url} 
                                 alt={comment.profiles.full_name || 'Usuario'} 
-                                className="size-8 rounded-full object-cover bg-gray-700/50"
+                                className="size-10 rounded-full object-cover bg-gray-800 ring-2 ring-gray-800"
                             />
                         ) : (
-                            <div className="bg-gray-700/50 p-1.5 rounded-full">
-                                <IconUser className="size-4 text-gray-400" />
+                            <div className="bg-gray-800 p-2 rounded-full">
+                                <IconUser className="size-6 text-gray-500" />
                             </div>
                         )}
                     </div>
                     <div className="flex-1 min-w-0">
-                        <div className="flex items-baseline justify-between mb-1">
-                            <span className="text-xs font-bold text-gray-300">
-                                {comment.profiles?.full_name || 'Usuario'}
-                            </span>
-                            <span className="text-[10px] text-gray-500">
-                                {dayjs(comment.created_at).fromNow()}
-                            </span>
+                        <div className="flex items-start justify-between mb-1">
+                            <div>
+                                <h4 className="text-sm font-bold text-gray-200">
+                                    {comment.profiles?.full_name || 'Usuario'}
+                                </h4>
+                                <div className="flex items-center gap-2 mt-0.5">
+                                    {comment.rating ? (
+                                        <StarRating value={comment.rating} size={14} readOnly />
+                                    ) : (
+                                        <span className="text-[10px] text-gray-600 bg-gray-800 px-1.5 py-0.5 rounded">Sin calificación</span>
+                                    )}
+                                    <span className="text-[10px] text-gray-500">•</span>
+                                    <span className="text-[10px] text-gray-500">
+                                        {dayjs(comment.created_at).fromNow()}
+                                    </span>
+                                </div>
+                            </div>
                         </div>
-                        <p className="text-sm text-gray-300 leading-relaxed break-words">{comment.content}</p>
+                        <p className="text-sm text-gray-300 leading-relaxed break-words mt-2">{comment.content}</p>
                     </div>
                     </div>
                 </div>
@@ -199,9 +288,9 @@ export function RestroomComments({ restroomId }: RestroomCommentsProps) {
             {(hasMore || (expanded && comments.length > 3)) && (
                 <button 
                 onClick={expanded ? () => { setExpanded(false); fetchComments(); } : fetchAllComments}
-                className="w-full py-2 text-sm font-semibold text-primary-400 hover:text-primary-300 hover:bg-primary-500/10 rounded-lg transition-colors"
+                className="w-full py-3 text-sm font-bold text-primary-400 hover:text-primary-300 hover:bg-primary-500/10 rounded-xl transition-all"
                 >
-                {expanded ? 'Ver menos' : 'Ver más comentarios'}
+                {expanded ? 'Ver menos reseñas' : 'Cargar más reseñas'}
                 </button>
             )}
         </div>
