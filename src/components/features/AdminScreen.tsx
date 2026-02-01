@@ -17,7 +17,8 @@ import {
     IconGenderBigender,
     IconStar,
     IconClock,
-    IconAlertCircle
+    IconAlertCircle,
+    IconMapPin
 } from '@tabler/icons-react'
 import { supabase } from '../../lib/supabase'
 import { useAppStore } from '../../lib/store'
@@ -28,6 +29,7 @@ import { TYPE_ICONS, AMENITY_ICONS } from '../../lib/constants'
 
 interface AdminScreenProps {
     onBack: () => void
+    onPickLocation: () => void
 }
 
 type FilterType = 'all' | 'verified' | 'pending'
@@ -61,7 +63,7 @@ const AMENITIES: { id: Amenity; label: string; icon: React.ReactNode }[] = [
     { id: 'private', label: 'Privado', icon: <AMENITY_ICONS.private size={16} /> },
 ]
 
-export function AdminScreen({ onBack }: AdminScreenProps) {
+export function AdminScreen({ onBack, onPickLocation }: AdminScreenProps) {
     const [activeView, setActiveView] = useState<'dashboard' | 'restrooms'>('dashboard')
     const { restrooms, setRestrooms } = useAppStore()
     const [comments, setComments] = useState<Comment[]>([])
@@ -442,6 +444,7 @@ export function AdminScreen({ onBack }: AdminScreenProps) {
                     <EditRestroomModal
                         restroom={editingRestroom}
                         onClose={() => setEditingRestroom(null)}
+                        onPickLocation={onPickLocation}
                         onSave={async (updated) => {
                             setRestrooms(restrooms.map(r => r.id === updated.id ? updated : r))
                             setEditingRestroom(null)
@@ -457,14 +460,44 @@ export function AdminScreen({ onBack }: AdminScreenProps) {
 interface EditRestroomModalProps {
     restroom: Restroom
     onClose: () => void
+    onPickLocation: () => void
     onSave: (restroom: Restroom) => Promise<void>
 }
 
-function EditRestroomModal({ restroom, onClose, onSave }: EditRestroomModalProps) {
+function EditRestroomModal({ restroom, onClose, onPickLocation, onSave }: EditRestroomModalProps) {
     const [form, setForm] = useState({ ...restroom })
     const [saving, setSaving] = useState(false)
     const [newPhotoFiles, setNewPhotoFiles] = useState<File[]>([])
     const [newPhotoPreviews, setNewPhotoPreviews] = useState<string[]>([])
+
+    // Location picking state
+    const { draftLocation, setDraftLocation, setMapViewState } = useAppStore()
+    const [waitingForLocation, setWaitingForLocation] = useState(false)
+
+    // Handle return from location picking
+    useEffect(() => {
+        if (waitingForLocation && draftLocation) {
+             setForm(prev => ({
+                 ...prev,
+                 latitude: draftLocation.latitude,
+                 longitude: draftLocation.longitude,
+                 address: draftLocation.address || prev.address // Use new address if available
+             }))
+             setDraftLocation(null) // Clear it so we don't re-use it
+             setWaitingForLocation(false)
+        }
+    }, [draftLocation, waitingForLocation, setDraftLocation])
+
+    const handlePickLocation = () => {
+        // Center map on current restroom location for better UX
+        setMapViewState({
+            latitude: form.latitude,
+            longitude: form.longitude,
+            zoom: 16
+        })
+        setWaitingForLocation(true)
+        onPickLocation()
+    }
 
     // Gender amenities from current amenities
     const genderAmenities = form.amenities.filter(a => ['male', 'female', 'unisex'].includes(a))
@@ -639,15 +672,33 @@ function EditRestroomModal({ restroom, onClose, onSave }: EditRestroomModalProps
                             />
                         </div>
 
-                        {/* Address */}
+                        {/* Address & Location */}
                         <div>
-                            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Direccion</label>
-                            <input
-                                type="text"
-                                value={form.address || ''}
-                                onChange={(e) => setForm({ ...form, address: e.target.value })}
-                                className="w-full px-4 py-2.5 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
-                            />
+                            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Ubicación y Dirección</label>
+                            <div className="space-y-2">
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        value={form.address || ''}
+                                        onChange={(e) => setForm({ ...form, address: e.target.value })}
+                                        className="flex-1 px-4 py-2.5 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                        placeholder="Dirección"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={handlePickLocation}
+                                        className="px-4 py-2 bg-gray-700 hover:bg-gray-600 border border-gray-600 rounded-lg text-white transition-colors flex items-center gap-2 shrink-0"
+                                        title="Editar ubicación en mapa"
+                                    >
+                                        <IconMapPin size={20} className="text-primary-400" />
+                                        <span className="hidden sm:inline">Editar Mapa</span>
+                                    </button>
+                                </div>
+                                <div className="flex gap-4 text-xs text-gray-500 font-mono px-1">
+                                    <span>Lat: {form.latitude.toFixed(6)}</span>
+                                    <span>Lon: {form.longitude.toFixed(6)}</span>
+                                </div>
+                            </div>
                         </div>
 
                         {/* Price */}
