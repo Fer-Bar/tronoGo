@@ -70,6 +70,11 @@ html.dark body {
   @apply font-sans;
 }
 
+/* Invert map canvas to create dark mode from light style */
+.mapboxgl-canvas {
+  filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+}
+
 /* Hide mapbox attribution for cleaner mobile look */
 .mapboxgl-ctrl-attrib {
   @apply hidden;
