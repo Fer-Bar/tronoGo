@@ -182,4 +182,80 @@ describe('filterAndSortRestrooms', () => {
         expect(result).toHaveLength(2)
         expect(result.find(r => r.name === 'Unverified')).toBeUndefined()
     })
+
+    describe('Gender Logic', () => {
+        const baseRestroom: Restroom = {
+            id: '1',
+            created_at: '2024-01-01',
+            name: 'Test',
+            latitude: 0,
+            longitude: 0,
+            address: null,
+            price: 0,
+            is_free: true,
+            rating: 0,
+            vote_count: 0,
+            status: 'open',
+            type: 'public',
+            amenities: [],
+            verified: true,
+            opening_time: null,
+            closing_time: null,
+            description: null,
+            photos: null,
+        }
+
+        const genderRestrooms: Restroom[] = [
+            { ...baseRestroom, id: 'male', name: 'Male Only', amenities: ['male'] },
+            { ...baseRestroom, id: 'female', name: 'Female Only', amenities: ['female'] },
+            { ...baseRestroom, id: 'unisex', name: 'Unisex', amenities: ['unisex'] },
+            { ...baseRestroom, id: 'none', name: 'No Gender', amenities: [] },
+            { ...baseRestroom, id: 'other', name: 'Other Amenities', amenities: ['accessible'] },
+            { ...baseRestroom, id: 'combined', name: 'Male and Unisex', amenities: ['male', 'unisex'] },
+        ]
+
+        it('filters by male: excludes no gender, other, and female', () => {
+            const filters = { ...defaultFilters, type: ['male'] as ("male" | "female" | "unisex")[] }
+            const result = filterAndSortRestrooms(genderRestrooms, filters, null)
+            const names = result.map(r => r.name)
+            expect(names).toContain('Male Only')
+            expect(names).toContain('Male and Unisex')
+            expect(names).not.toContain('No Gender')
+            expect(names).not.toContain('Other Amenities')
+            expect(names).not.toContain('Female Only')
+            expect(names).not.toContain('Unisex')
+        })
+
+        it('filters by female: excludes no gender, other, and male', () => {
+            const filters = { ...defaultFilters, type: ['female'] as ("male" | "female" | "unisex")[] }
+            const result = filterAndSortRestrooms(genderRestrooms, filters, null)
+            const names = result.map(r => r.name)
+            expect(names).toContain('Female Only')
+            expect(names).not.toContain('Male Only')
+            expect(names).not.toContain('No Gender')
+            expect(names).not.toContain('Other Amenities')
+            expect(names).not.toContain('Unisex')
+        })
+
+        it('filters by unisex', () => {
+            const filters = { ...defaultFilters, type: ['unisex'] as ("male" | "female" | "unisex")[] }
+            const result = filterAndSortRestrooms(genderRestrooms, filters, null)
+            const names = result.map(r => r.name)
+            expect(names).toContain('Unisex')
+            expect(names).toContain('Male and Unisex')
+            expect(names).not.toContain('No Gender')
+            expect(names).not.toContain('Male Only')
+        })
+
+        it('filters by male AND unisex (combined)', () => {
+            const filters = { ...defaultFilters, type: ['male', 'unisex'] as ("male" | "female" | "unisex")[] }
+            const result = filterAndSortRestrooms(genderRestrooms, filters, null)
+            const names = result.map(r => r.name)
+            expect(names).toContain('Male Only')
+            expect(names).toContain('Unisex')
+            expect(names).toContain('Male and Unisex')
+            expect(names).not.toContain('Female Only')
+            expect(names).not.toContain('No Gender')
+        })
+    })
 })

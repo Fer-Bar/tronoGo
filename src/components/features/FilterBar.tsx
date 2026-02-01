@@ -30,7 +30,18 @@ export function FilterBar({ filters, onFiltersChange, bathroomCount }: FilterBar
     (filters.isFree !== null ? 1 : 0)
 
   const toggleType = (type: "male" | "female" | "unisex") => {
-    const newTypes = filters.type.includes(type) ? filters.type.filter((t) => t !== type) : [...filters.type, type]
+    let newTypes: ("male" | "female" | "unisex")[]
+
+    if (filters.type.includes(type)) {
+      newTypes = filters.type.filter((t) => t !== type)
+    } else {
+      newTypes = [...filters.type, type]
+      if (type === "male") {
+        newTypes = newTypes.filter((t) => t !== "female")
+      } else if (type === "female") {
+        newTypes = newTypes.filter((t) => t !== "male")
+      }
+    }
     onFiltersChange({ ...filters, type: newTypes })
   }
 

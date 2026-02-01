@@ -101,18 +101,8 @@ export function filterAndSortRestrooms(
 
         // 4. Type (Male/Female/Unisex) - OR logic for selected types
         if (filters.type.length > 0) {
-            if (filters.type.length === 1 && filters.type.includes('unisex')) {
-                return restroom.amenities.includes('unisex')
-            }
-            const isUnisex = restroom.amenities.includes('unisex')
-            const matchesGender = filters.type.some(t => {
-                if (t === 'unisex') return isUnisex
-                if (t === 'male') return restroom.amenities.includes('male') || !isUnisex
-                if (t === 'female') return restroom.amenities.includes('female') || !isUnisex
-                return false
-            })
-
-            if (!matchesGender) return false
+            const matchesType = filters.type.some((t) => restroom.amenities.includes(t))
+            if (!matchesType) return false
         }
 
         return true
