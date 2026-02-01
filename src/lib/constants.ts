@@ -2,8 +2,8 @@ import type { TablerIcon } from '@tabler/icons-react'
 // Mapbox configuration
 export const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN
 
-// Map style - using a clean light style
-export const MAP_STYLE = 'mapbox://styles/mapbox/navigation-night-v1'
+// Map style - using streets style for more POIs (inverted to dark in CSS)
+export const MAP_STYLE = 'mapbox://styles/mapbox/streets-v12'
 
 // Default map center (Mexico City)
 export const DEFAULT_CENTER = {
