@@ -63,7 +63,7 @@ export function filterAndSortRestrooms(
     filters: FilterState,
     userLocation: { latitude: number; longitude: number } | null
 ): Restroom[] {
-    return restrooms.filter((restroom) => {
+    const filtered = restrooms.filter((restroom) => {
         // Only show verified restrooms to users
         if (!restroom.verified) {
             return false
@@ -116,15 +116,24 @@ export function filterAndSortRestrooms(
         }
 
         return true
-    }).sort((a, b) => {
-        // Sort by distance if user location is known
-        if (userLocation) {
-            const distA = calculateDistance(userLocation.latitude, userLocation.longitude, a.latitude, a.longitude)
-            const distB = calculateDistance(userLocation.latitude, userLocation.longitude, b.latitude, b.longitude)
-            return distA - distB
-        }
-        return 0
     })
+
+    if (userLocation) {
+        return filtered
+            .map((restroom) => ({
+                restroom,
+                distance: calculateDistance(
+                    userLocation.latitude,
+                    userLocation.longitude,
+                    restroom.latitude,
+                    restroom.longitude
+                ),
+            }))
+            .sort((a, b) => a.distance - b.distance)
+            .map((item) => item.restroom)
+    }
+
+    return filtered
 }
 
 // --- Address Parsing Utilities ---
