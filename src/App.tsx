@@ -10,7 +10,7 @@ import { MAPBOX_TOKEN } from './lib/constants'
 import { getCachedLocation, initGeolocation } from './lib/geolocation'
 import type { Restroom } from './lib/database.types'
 
-type Screen = 'explore' | 'pin-picker' | 'admin'
+type Screen = 'explore' | 'pin-picker' | 'admin' | 'admin-pin-picker'
 
 function App() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('explore')
@@ -96,7 +96,7 @@ function App() {
   // Address Fetch for Pin Picker
   const fetchAddress = useCallback(async (forceScreen?: Screen, coords?: { longitude: number; latitude: number }) => {
     const screen = forceScreen ?? currentScreen
-    if (screen !== 'pin-picker') return
+    if (screen !== 'pin-picker' && screen !== 'admin-pin-picker') return
     
     const { longitude, latitude } = coords ?? mapViewState
     setPickerAddress('Cargando...')
@@ -127,11 +127,19 @@ function App() {
 
   const handlePinPickerBack = () => {
     setDraftLocation(null)
-    setCurrentScreen('explore')
+    if (currentScreen === 'admin-pin-picker') {
+      setCurrentScreen('admin')
+    } else {
+      setCurrentScreen('explore')
+    }
   }
 
   const handlePinPickerConfirm = () => {
-    setIsAddModalOpen(true)
+    if (currentScreen === 'admin-pin-picker') {
+      setCurrentScreen('admin')
+    } else {
+      setIsAddModalOpen(true)
+    }
   }
 
   const handleModalClose = () => {
@@ -180,6 +188,11 @@ function App() {
     setCurrentScreen('explore')
   }, [])
 
+  const handleAdminPickLocation = useCallback(() => {
+    setCurrentScreen('admin-pin-picker')
+    fetchAddress('admin-pin-picker')
+  }, [fetchAddress])
+
   return (
     <div className="h-dvh w-screen overflow-hidden relative bg-gray-900">
       
@@ -188,7 +201,7 @@ function App() {
           <MapboxMap 
              ref={mapRef}
              restrooms={filteredRestrooms} 
-             mode={currentScreen === 'pin-picker' ? 'pin-picker' : 'explore'} 
+             mode={(currentScreen === 'pin-picker' || currentScreen === 'admin-pin-picker') ? 'pin-picker' : 'explore'}
              onMoveEnd={(coords) => fetchAddress(undefined, coords)}
              onMarkerClick={handleMarkerClick}
           />
@@ -206,7 +219,7 @@ function App() {
             </div>
           )}
 
-          {currentScreen === 'pin-picker' && (
+          {(currentScreen === 'pin-picker' || currentScreen === 'admin-pin-picker') && (
             <div className="w-full h-full">
                 <PinPickerScreen
                   address={pickerAddress}
@@ -216,8 +229,13 @@ function App() {
             </div>
           )}
 
-          {currentScreen === 'admin' && (
-            <AdminScreen onBack={handleAdminBack} />
+          {(currentScreen === 'admin' || currentScreen === 'admin-pin-picker') && (
+            <div className={currentScreen === 'admin-pin-picker' ? 'hidden' : 'block'}>
+              <AdminScreen
+                onBack={handleAdminBack}
+                onPickLocation={handleAdminPickLocation}
+              />
+            </div>
           )}
       </div>
 
