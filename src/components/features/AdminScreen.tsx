@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
 import { 
@@ -113,14 +113,14 @@ export function AdminScreen({ onBack }: AdminScreenProps) {
     }
 
     // Filter restrooms
-    const filteredRestrooms = restrooms.filter(r => {
+    const filteredRestrooms = useMemo(() => restrooms.filter(r => {
         const matchesSearch = r.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             r.address?.toLowerCase().includes(searchQuery.toLowerCase())
         const matchesFilter = filterType === 'all' ||
             (filterType === 'verified' && r.verified) ||
             (filterType === 'pending' && !r.verified)
         return matchesSearch && matchesFilter
-    })
+    }), [restrooms, searchQuery, filterType])
 
     // Get comments for a specific restroom
     const getRestroomComments = (restroomId: string) => 
