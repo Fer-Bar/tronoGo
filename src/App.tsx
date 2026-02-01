@@ -226,7 +226,7 @@ function App() {
         onClose={handleModalClose}
         onSuccess={handleAddSuccess}
       />
-      <Toaster richColors position="top-center" />
+      <Toaster richColors position="top-center" closeButton theme="dark" />
     </div>
   )
 }
