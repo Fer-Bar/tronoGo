@@ -6,6 +6,7 @@ import { Button } from '../ui'
 import { cn } from '../../lib/utils'
 import { supabase } from '../../lib/supabase'
 import { useAppStore } from '../../lib/store'
+import { useAuthStore } from '../../lib/authStore'
 import type { RestroomType, Amenity, TablesInsert } from '../../lib/database.types'
 import { uploadImageToR2 } from '../../utils/upload'
 import { TYPE_ICONS, AMENITY_ICONS } from '../../lib/constants'
@@ -34,6 +35,7 @@ const AMENITIES: { id: Amenity; label: string; icon: React.ReactNode }[] = [
 
 export function AddRestroomModal({ isOpen, onClose, onSuccess }: AddRestroomModalProps) {
   const { draftLocation, addRestroom } = useAppStore()
+  const { isAdmin } = useAuthStore()
   
   // Form State
   const [name, setName] = useState('')
@@ -158,7 +160,7 @@ export function AddRestroomModal({ isOpen, onClose, onSuccess }: AddRestroomModa
         status: 'open' as const,
         type: selectedType,
         amenities: allAmenities,
-        verified: false,
+        verified: isAdmin,
         opening_time: openTime || null,
         closing_time: closeTime || null,
         description: description || null,
@@ -181,7 +183,11 @@ export function AddRestroomModal({ isOpen, onClose, onSuccess }: AddRestroomModa
       if (data) {
         addRestroom(data)
         onSuccess()
-        toast.success('¡Baño agregado exitosamente!')
+        if (isAdmin) {
+          toast.success('¡Baño agregado exitosamente!')
+        } else {
+          toast.success('¡Baño enviado para revisión! Un administrador lo revisará pronto.')
+        }
       }
     } catch (err) {
       console.error('Error:', err)
