@@ -1,11 +1,12 @@
 import { IconX, IconNavigation, IconStar, IconCash } from '@tabler/icons-react'
 import { Button } from '../ui/Button'
-import { formatDistance, calculateDistance } from '../../lib/utils'
+import { formatDistance } from '../../lib/utils'
 import { TYPE_LABELS } from '../../lib/constants'
 import type { Restroom } from '../../lib/database.types'
+import type { RestroomWithDistance } from '../../lib/types'
 
 interface NearbyListProps {
-  restrooms: Restroom[]
+  restrooms: RestroomWithDistance[]
   userLocation: { latitude: number; longitude: number } | null
   onRestroomSelect: (restroom: Restroom) => void
   onClose: () => void
@@ -58,17 +59,10 @@ export function NearbyList({
                         <span className="px-2.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded-full text-xs font-medium text-gray-700 dark:text-gray-300">
                           {TYPE_LABELS[restroom.type]?.label || restroom.type}
                         </span>
-                        {/* Calculate and show distance if user location is available */}
-                        {userLocation && (
+                        {/* Show distance if available (pre-calculated during sorting) */}
+                        {restroom.distance !== undefined && (
                           <span className="text-gray-500 text-xs text-nowrap">
-                            {formatDistance(
-                              calculateDistance(
-                                userLocation.latitude, 
-                                userLocation.longitude, 
-                                restroom.latitude, 
-                                restroom.longitude
-                              )
-                            )}
+                            {formatDistance(restroom.distance)}
                           </span>
                         )}
                         {restroom.address && !userLocation && (
