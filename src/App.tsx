@@ -69,12 +69,9 @@ function App() {
     // Usually fetching once on app load is improved pattern.
     if (useAppStore.getState().restrooms.length > 0) return
 
-    import('./lib/supabase').then(async ({ supabase }) => {
+    import('./lib/api').then(async ({ fetchRestrooms }) => {
        // Assuming Restroom type is available or we cast later
-       const { data, error } = await supabase
-        .from('restrooms')
-        .select('*')
-        .limit(100)
+       const { data, error } = await fetchRestrooms()
 
       if (error) {
         console.error('Error fetching restrooms:', error)
