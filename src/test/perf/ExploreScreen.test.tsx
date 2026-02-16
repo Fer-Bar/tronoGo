@@ -50,7 +50,7 @@ vi.mock('../../lib/utils', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../lib/utils')>()
   return {
     ...actual,
-    filterAndSortRestrooms: vi.fn((...args) => actual.filterAndSortRestrooms(...args)),
+    filterAndSortRestrooms: vi.fn((a, b, c) => actual.filterAndSortRestrooms(a, b, c)),
   }
 })
 
