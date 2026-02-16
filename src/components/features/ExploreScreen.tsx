@@ -6,16 +6,17 @@ import { NearbyList } from './NearbyList'
 import { ProfileButton } from '../auth/ProfileButton'
 import { useAppStore } from '../../lib/store'
 import { useAuthStore } from '../../lib/authStore'
-import { filterAndSortRestrooms } from '../../lib/utils'
+import type { Restroom } from '../../lib/database.types'
 
 interface ExploreScreenProps {
+  filteredRestrooms: Restroom[]
   onAddClick: () => void
   onFlyToUser?: () => void
   onFlyToRestroom?: (longitude: number, latitude: number) => void
   onAdminClick?: () => void
 }
 
-export function ExploreScreen({ onAddClick, onFlyToUser, onFlyToRestroom, onAdminClick }: ExploreScreenProps) {
+export function ExploreScreen({ filteredRestrooms, onAddClick, onFlyToUser, onFlyToRestroom, onAdminClick }: ExploreScreenProps) {
   const { restrooms, selectedRestroom, setSelectedRestroom, setMapViewState, userLocation, filters, setFilters } =
     useAppStore()
   const user = useAuthStore(state => state.user)
@@ -61,12 +62,6 @@ export function ExploreScreen({ onAddClick, onFlyToUser, onFlyToRestroom, onAdmi
       })
     }
   }, [userLocation, onFlyToUser, setMapViewState])
-
-  // Filter logic moved to App/utils - we just display the count based on raw or filtered?
-  // Use filterAndSortRestrooms here just for the count passed to FilterBar? 
-  // Yes, FilterBar needs count.
-  // We can re-use the util.
-  const filteredRestrooms = filterAndSortRestrooms(restrooms, filters, userLocation)
 
   return (
     <div className="relative h-full w-full bg-transparent pointer-events-none">

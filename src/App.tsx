@@ -211,6 +211,7 @@ function App() {
           {currentScreen === 'explore' && (
             <div className="w-full h-full">
                <ExploreScreen 
+                 filteredRestrooms={filteredRestrooms}
                  onAddClick={handleAddClick} 
                  onFlyToUser={handleFlyToUser}
                  onFlyToRestroom={handleFlyToRestroom}
