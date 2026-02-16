@@ -1,6 +1,6 @@
 import { clsx, type ClassValue } from 'clsx'
 import type { Restroom } from './database.types'
-import type { FilterState } from './types'
+import type { FilterState, RestroomWithDistance } from './types'
 
 export function cn(...inputs: ClassValue[]) {
     return clsx(inputs)
@@ -62,7 +62,7 @@ export function filterAndSortRestrooms(
     restrooms: Restroom[],
     filters: FilterState,
     userLocation: { latitude: number; longitude: number } | null
-): Restroom[] {
+): RestroomWithDistance[] {
     const filtered = restrooms.filter((restroom) => {
         // Only show verified restrooms to users
         if (!restroom.verified) {
@@ -120,7 +120,7 @@ export function filterAndSortRestrooms(
                 ),
             }))
             .sort((a, b) => a.distance - b.distance)
-            .map((item) => item.restroom)
+            .map((item) => ({ ...item.restroom, distance: item.distance }))
     }
 
     return filtered
